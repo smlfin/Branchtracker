@@ -260,16 +260,18 @@
     </div>
 
     <script>
-        const form = document.getElementById('performanceForm');
+        // Get references to HTML elements
+        const form = document.getElementById('performanceForm'); // Form needs this ID!
         const formTitle = document.getElementById('formTitle');
         const successMessage = document.getElementById('formSuccessMessage');
         const errorMessage = document.getElementById('formErrorMessage');
 
         // IMPORTANT: Replace this with your Google Apps Script Web App URL
-        const appsScriptURL = 'https://script.google.com/macros/s/AKfycbxy1SXrEszvdUrysBb4WhqqNkTeKJq46Zop1qMzGgSjeRSu9sLmoPmSsS09UQpsNYSX/exec';
+        const appsScriptURL = 'https://script.google.com/macros/s/AKfycbxnNMtVjeHh4M87Pn61_jxzcs902win5sToqQQDRR6_RFKckZOsk9zZlDbGD2juW7NC/exec';
 
+        // Add event listener for form submission
         form.addEventListener('submit', async function(event) {
-            event.preventDefault(); // Prevent default form submission (page reload)
+            event.preventDefault(); // PREVENT THE DEFAULT BROWSER SUBMISSION (page reload)
 
             // Hide any previous messages
             successMessage.style.display = 'none';
@@ -278,35 +280,41 @@
             // Disable submit button to prevent multiple submissions
             const submitButton = form.querySelector('button[type="submit"]');
             submitButton.disabled = true;
-            submitButton.textContent = 'Submitting...'; // Change button text
+            submitButton.textContent = 'Submitting...'; // Provide user feedback
 
-            const formData = new FormData(form); // Get form data
+            const formData = new FormData(form); // Collect all form data
 
             try {
+                // Send data using fetch API (AJAX)
                 const response = await fetch(appsScriptURL, {
                     method: 'POST',
                     body: formData,
                 });
 
-                if (response.ok) {
-                    const result = await response.text(); // Read the text response from Apps Script
-                    if (result === 'Success') { // Check if Apps Script returned "Success"
+                if (response.ok) { // Check if the HTTP status code is 2xx (success)
+                    const resultText = await response.text(); // Read the text response from Apps Script
+                    console.log("Apps Script response text:", resultText); // Log response for debugging
+
+                    // Check if Apps Script returned the exact "Success" text
+                    if (resultText.trim() === 'Success') {
                         form.style.display = 'none'; // Hide the form
                         formTitle.style.display = 'none'; // Hide the title
                         successMessage.style.display = 'block'; // Show success message
                         form.reset(); // Clear the form fields for next submission
                     } else {
-                        // Apps Script returned something other than "Success"
-                        errorMessage.querySelector('p').textContent = `Submission failed: ${result}`;
-                        errorMessage.style.display = 'block'; // Show generic error
+                        // Apps Script returned something unexpected
+                        console.error("Apps Script returned unexpected text:", resultText);
+                        errorMessage.querySelector('p').textContent = `Submission failed: Unexpected response from server.`;
+                        errorMessage.style.display = 'block';
                     }
                 } else {
                     // HTTP error (e.g., 404, 500 from Apps Script)
-                    errorMessage.querySelector('p').textContent = `Server error: ${response.status} ${response.statusText}`;
+                    console.error("HTTP Error during submission:", response.status, response.statusText);
+                    errorMessage.querySelector('p').textContent = `Server error: ${response.status} ${response.statusText}. Please try again.`;
                     errorMessage.style.display = 'block';
                 }
             } catch (error) {
-                // Network error or other fetch issues
+                // Network error or other fetch issues (e.g., no internet)
                 console.error('Error submitting form:', error);
                 errorMessage.querySelector('p').textContent = `Network error: ${error.message}. Please check your connection.`;
                 errorMessage.style.display = 'block';
