@@ -5,77 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Branch Performance Tracker</title>
     <style>
-        /* Basic CSS for styling to make the form presentable */
+        /* Minimal CSS to ensure visibility and basic readability */
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
-            background-color: #f7f9fc;
+            background-color: #f0f0f0; /* Light background */
             color: #333;
         }
         .container {
-            max-width: 800px;
-            margin: 30px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        h1 {
-            text-align: center;
-            color: #0056b3;
-            margin-bottom: 30px;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ccc; /* Simple border */
+            background-color: white;
         }
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             font-weight: bold;
-            color: #555;
         }
         input[type="text"],
         input[type="number"],
         select {
-            width: calc(100% - 22px); /* Account for padding and border */
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
+            width: 100%; /* Full width */
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
             box-sizing: border-box; /* Include padding in width */
         }
-        .grid-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        @media (max-width: 600px) {
-            .grid-container {
-                grid-template-columns: 1fr;
-            }
-        }
         button {
-            background-color: #28a745;
+            background-color: #007bff; /* Blue button */
             color: white;
-            padding: 12px 25px;
+            padding: 10px 15px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 18px;
-            display: block;
-            width: 100%;
-            margin-top: 30px;
-            transition: background-color 0.3s ease;
+            font-size: 16px;
+            display: block; /* Ensure it's a block element */
+            width: 100%; /* Make it full width */
+            margin-top: 20px;
         }
         button:hover {
-            background-color: #218838;
-        }
-        .success-message {
-            color: #28a745;
-            font-weight: bold;
-            margin-top: 20px;
-            text-align: center;
-            display: none; /* Hidden by default */
+            background-color: #0056b3;
         }
         .hidden {
             display: none;
@@ -86,15 +60,14 @@
     <div class="container">
         <h1>Branch Performance Data Entry</h1>
 
-        <form name="branch_performance_tracker" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" data-netlify-redirect="/">
+       <form name="branch_performance_tracker" method="POST" action="https://script.google.com/macros/s/AKfycbxnNMtVjeHh4M87Pn61_jxzcs902win5sToqQQDRR6_RFKckZOsk9zZlDbGD2juW7NC/exec">
             <p class="hidden">
                 <label>Don’t fill this out if you’re human: <input name="bot-field" /></label>
             </p>
 
-            <div class="grid-container">
-                <div class="form-group">
-                    <label for="branch">Branch:</label>
-                    <select id="branch" name="Branch" required>
+           <div class="form-group">
+                <label for="branch">Branch:</label>
+                <select id="branch" name="Branch" required>
                         <option value="">Select Branch</option>
                         <option value="Alathur">Alathur</option>
                         <option value="Angamaly">Angamaly</option>
@@ -121,24 +94,19 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="employeeName">Employee name:</label>
-                    <input type="text" id="employeeName" name="Employee name" placeholder="E.g., John Doe" required>
-                </div>
+                <label for="fyTarget">FY Target:</label>
+                <input type="number" id="fyTarget" name="FY Target" placeholder="E.g., 100000" required>
+            </div>
 
-                <div class="form-group">
-                    <label for="fyTarget">FY Target:</label>
-                    <input type="number" id="fyTarget" name="FY Target" placeholder="E.g., 100000" required>
-                </div>
+            <div class="form-group">
+                <label for="fyAchmt">FY Achmt:</label>
+                <input type="number" id="fyAchmt" name="FY Achmt" placeholder="E.g., 95000" required>
+            </div>
 
-                <div class="form-group">
-                    <label for="fyAchmt">FY Achmt:</label>
-                    <input type="number" id="fyAchmt" name="FY Achmt" placeholder="E.g., 95000" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="quarterTarget">Quarter Target:</label>
-                    <input type="number" id="quarterTarget" name="Quarter Target" placeholder="E.g., 25000" required>
-                </div>
+            <div class="form-group">
+                <label for="quarterTarget">Quarter Target:</label>
+                <input type="number" id="quarterTarget" name="Quarter Target" placeholder="E.g., 25000" required>
+            </div>
 
                 <div class="form-group">
                     <label for="quarterAchmt">Quarter Achievement:</label>
@@ -190,8 +158,12 @@
                     <label for="week4Achmt">WEEK 4 Achmt:</label>
                     <input type="number" id="week4Achmt" name="WEEK 4 Achmt" placeholder="E.g., 2100">
                 </div>
-                </div> <button type="submit">Submit Performance Data</button>
-            <p class="success-message" id="successMessage">Data submitted successfully!</p>
+               <div class="form-group">
+                <label for="employeeName">Employee name:</label>
+                <input type="text" id="employeeName" name="Employee name" placeholder="E.g., John Doe" required>
+            </div>
+
+            <button type="submit">Submit Performance Data</button>
         </form>
     </div>
 </body>
