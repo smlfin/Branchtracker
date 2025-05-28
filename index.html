@@ -86,7 +86,7 @@
     <div class="container">
         <h1>Branch Performance Data Entry</h1>
 
-        <form name="branch_performance_tracker" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+        <form name="branch_performance_tracker" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" data-netlify-redirect="/">
             <p class="hidden">
                 <label>Don’t fill this out if you’re human: <input name="bot-field" /></label>
             </p>
@@ -185,6 +185,10 @@
                 <div class="form-group">
                     <label for="week4Target">WEEK 4 Target:</label>
                     <input type="number" id="week4Target" name="WEEK 4 Target" placeholder="E.g., 2000">
+                </div>
+<div class="form-group">
+                    <label for="week4Achmt">WEEK 4 Achmt:</label>
+                    <input type="number" id="week4Achmt" name="WEEK 4 Achmt" placeholder="E.g., 2100">
                 </div>
                 </div> <button type="submit">Submit Performance Data</button>
             <p class="success-message" id="successMessage">Data submitted successfully!</p>
