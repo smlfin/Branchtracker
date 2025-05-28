@@ -12,13 +12,13 @@
             color: #333;
         }
         .container {
-            max-width: 800px; /* Increased max-width for better two-column layout */
+            max-width: 800px;
             margin: 20px auto;
             padding: 25px;
             border: 1px solid #ccc;
-            border-radius: 8px; /* Slightly rounded corners */
+            border-radius: 8px;
             background-color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         h1 {
             text-align: center;
@@ -52,22 +52,19 @@
             box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
         }
 
-        /* Styles for the 1:1 grid layout */
         .grid-row {
             display: grid;
-            grid-template-columns: 1fr 1fr; /* Two equal columns */
-            gap: 20px; /* Space between columns */
-            margin-bottom: 15px; /* Space below the grid row */
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 15px;
         }
-        /* Make form groups within a grid-row occupy their grid cell */
         .grid-row .form-group {
-            margin-bottom: 0; /* Remove bottom margin if they are inside grid-row */
+            margin-bottom: 0;
         }
 
-        /* Responsive adjustments for smaller screens */
         @media (max-width: 768px) {
             .grid-row {
-                grid-template-columns: 1fr; /* Stack columns on smaller screens */
+                grid-template-columns: 1fr;
             }
             .container {
                 margin: 10px;
@@ -76,7 +73,7 @@
         }
 
         button {
-            background-color: #28a745; /* Success green */
+            background-color: #28a745;
             color: white;
             padding: 12px 25px;
             border: none;
@@ -94,13 +91,44 @@
         .hidden {
             display: none;
         }
+
+        /* Styles for success/error messages */
+        #formSuccessMessage, #formErrorMessage {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            display: none; /* Hidden by default */
+            margin-top: 20px;
+        }
+        #formErrorMessage {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+        .go-back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        .go-back-button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Branch Performance Data Entry</h1>
+        <h1 id="formTitle">Branch Performance Data Entry</h1>
 
-        <form name="branch_performance_tracker" method="POST" action="https://script.google.com/macros/s/AKfycbxy1SXrEszvdUrysBb4WhqqNkTeKJq46Zop1qMzGgSjeRSu9sLmoPmSsS09UQpsNYSX/exec">
+        <form id="performanceForm">
             <p class="hidden">
                 <label>Don’t fill this out if you’re human: <input name="bot-field" /></label>
             </p>
@@ -216,6 +244,87 @@
 
             <button type="submit">Submit Performance Data</button>
         </form>
+
+        <div id="formSuccessMessage">
+            <h1>Submission Successful!</h1>
+            <p>Your performance data has been recorded.</p>
+            <button class="go-back-button" onclick="resetForm()">Go Back to Form</button>
+        </div>
+
+        <div id="formErrorMessage">
+            <h1>Submission Failed!</h1>
+            <p>There was an error submitting your data. Please try again or contact support.</p>
+            <button class="go-back-button" onclick="resetForm()">Try Again</button>
+        </div>
+
     </div>
+
+    <script>
+        const form = document.getElementById('performanceForm');
+        const formTitle = document.getElementById('formTitle');
+        const successMessage = document.getElementById('formSuccessMessage');
+        const errorMessage = document.getElementById('formErrorMessage');
+
+        // IMPORTANT: Replace this with your Google Apps Script Web App URL
+        const appsScriptURL = 'https://script.google.com/macros/s/AKfycbxy1SXrEszvdUrysBb4WhqqNkTeKJq46Zop1qMzGgSjeRSu9sLmoPmSsS09UQpsNYSX/exec';
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent default form submission (page reload)
+
+            // Hide any previous messages
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+
+            // Disable submit button to prevent multiple submissions
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Submitting...'; // Change button text
+
+            const formData = new FormData(form); // Get form data
+
+            try {
+                const response = await fetch(appsScriptURL, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    const result = await response.text(); // Read the text response from Apps Script
+                    if (result === 'Success') { // Check if Apps Script returned "Success"
+                        form.style.display = 'none'; // Hide the form
+                        formTitle.style.display = 'none'; // Hide the title
+                        successMessage.style.display = 'block'; // Show success message
+                        form.reset(); // Clear the form fields for next submission
+                    } else {
+                        // Apps Script returned something other than "Success"
+                        errorMessage.querySelector('p').textContent = `Submission failed: ${result}`;
+                        errorMessage.style.display = 'block'; // Show generic error
+                    }
+                } else {
+                    // HTTP error (e.g., 404, 500 from Apps Script)
+                    errorMessage.querySelector('p').textContent = `Server error: ${response.status} ${response.statusText}`;
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                // Network error or other fetch issues
+                console.error('Error submitting form:', error);
+                errorMessage.querySelector('p').textContent = `Network error: ${error.message}. Please check your connection.`;
+                errorMessage.style.display = 'block';
+            } finally {
+                // Re-enable button regardless of success or failure
+                submitButton.disabled = false;
+                submitButton.textContent = 'Submit Performance Data';
+            }
+        });
+
+        // Function to reset the form and show it again
+        function resetForm() {
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+            formTitle.style.display = 'block'; // Show title again
+            form.style.display = 'block'; // Show the form again
+            form.reset(); // Reset form fields
+        }
+    </script>
 </body>
 </html>
