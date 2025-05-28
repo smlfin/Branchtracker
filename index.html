@@ -5,19 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Branch Performance Tracker</title>
     <style>
-        /* Minimal CSS to ensure visibility and basic readability */
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
-            background-color: #f0f0f0; /* Light background */
+            background-color: #f0f0f0;
             color: #333;
         }
         .container {
-            max-width: 600px;
+            max-width: 800px; /* Increased max-width for better two-column layout */
             margin: 20px auto;
-            padding: 20px;
-            border: 1px solid #ccc; /* Simple border */
+            padding: 25px;
+            border: 1px solid #ccc;
+            border-radius: 8px; /* Slightly rounded corners */
             background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 25px;
         }
         .form-group {
             margin-bottom: 15px;
@@ -26,30 +32,64 @@
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
+            color: #555;
         }
         input[type="text"],
         input[type="number"],
         select {
-            width: 100%; /* Full width */
-            padding: 8px;
+            width: 100%;
+            padding: 10px;
             border: 1px solid #ddd;
-            border-radius: 3px;
-            box-sizing: border-box; /* Include padding in width */
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
         }
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
+        }
+
+        /* Styles for the 1:1 grid layout */
+        .grid-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Two equal columns */
+            gap: 20px; /* Space between columns */
+            margin-bottom: 15px; /* Space below the grid row */
+        }
+        /* Make form groups within a grid-row occupy their grid cell */
+        .grid-row .form-group {
+            margin-bottom: 0; /* Remove bottom margin if they are inside grid-row */
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 768px) {
+            .grid-row {
+                grid-template-columns: 1fr; /* Stack columns on smaller screens */
+            }
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+        }
+
         button {
-            background-color: #007bff; /* Blue button */
+            background-color: #28a745; /* Success green */
             color: white;
-            padding: 10px 15px;
+            padding: 12px 25px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 16px;
-            display: block; /* Ensure it's a block element */
-            width: 100%; /* Make it full width */
-            margin-top: 20px;
+            font-size: 18px;
+            display: block;
+            width: 100%;
+            margin-top: 30px;
+            transition: background-color 0.3s ease;
         }
         button:hover {
-            background-color: #0056b3;
+            background-color: #218838;
         }
         .hidden {
             display: none;
@@ -60,69 +100,77 @@
     <div class="container">
         <h1>Branch Performance Data Entry</h1>
 
-       <form name="branch_performance_tracker" method="POST" action="https://script.google.com/macros/s/AKfycbxnNMtVjeHh4M87Pn61_jxzcs902win5sToqQQDRR6_RFKckZOsk9zZlDbGD2juW7NC/exec">
+        <form name="branch_performance_tracker" method="POST" action="https://script.google.com/macros/s/AKfycbxnNMtVjeHh4M87Pn61_jxzcs902win5sToqQQDRR6_RFKckZOsk9zZlDbGD2juW7NC/exec">
             <p class="hidden">
                 <label>Don’t fill this out if you’re human: <input name="bot-field" /></label>
             </p>
 
-           <div class="form-group">
+            <div class="form-group">
                 <label for="branch">Branch:</label>
                 <select id="branch" name="Branch" required>
-                        <option value="">Select Branch</option>
-                        <option value="Alathur">Alathur</option>
-                        <option value="Angamaly">Angamaly</option>
-                        <option value="Chengannur">Chengannur</option>
-			<option value="Edappally">Edappally</option>
-			<option value="Harippad">Harippad</option>
-			<option value="Kattapana">Kattapana</option>
-			<option value="Koduvayur">Koduvayur</option>
-			<option value="Kottayam">Kottayam</option>
-			<option value="Kuzhalmannam">Kuzhalmannam</option>
-			<option value="Mattancherry">Mattancherry</option>
-			<option value="Mavelikara">Mavelikara</option>
-			<option value="Muvattupuzha">Muvattupuzha</option>
-			<option value="Nedumkandom">Nedumkandom</option>
-			<option value="Nenmara">Nenmara</option>
-			<option value="Paravoor">Paravoor</option>
-			<option value="Perumbavoor">Perumbavoor</option>
-			<option value="Thiruvalla">Thiruvalla</option>
-			<option value="Thiruwillamala">Thiruwillamala</option>
-			<option value="Thodupuzha">Thodupuzha</option>
+                    <option value="">Select Branch</option>
+                    <option value="Alathur">Alathur</option>
+                    <option value="Angamaly">Angamaly</option>
+                    <option value="Chengannur">Chengannur</option>
+                    <option value="Edappally">Edappally</option>
+                    <option value="Harippad">Harippad</option>
+                    <option value="Kattapana">Kattapana</option>
+                    <option value="Koduvayur">Koduvayur</option>
+                    <option value="Kottayam">Kottayam</option>
+                    <option value="Kuzhalmannam">Kuzhalmannam</option>
+                    <option value="Mattancherry">Mattancherry</option>
+                    <option value="Mavelikara">Mavelikara</option>
+                    <option value="Muvattupuzha">Muvattupuzha</option>
+                    <option value="Nedumkandom">Nedumkandom</option>
+                    <option value="Nenmara">Nenmara</option>
+                    <option value="Paravoor">Paravoor</option>
+                    <option value="Perumbavoor">Perumbavoor</option>
+                    <option value="Thiruvalla">Thiruvalla</option>
+                    <option value="Thiruwillamala">Thiruwillamala</option>
+                    <option value="Thodupuzha">Thodupuzha</option>
+                    <option value="Headquarters">Headquarters</option>
+                </select>
+            </div>
 
-                        <option value="Headquarters">Headquarters</option>
-                        </select>
-                </div>
+            <div class="form-group">
+                <label for="employeeName">Employee name:</label>
+                <input type="text" id="employeeName" name="Employee name" placeholder="E.g., John Doe" required>
+            </div>
 
+            <div class="grid-row">
                 <div class="form-group">
-                <label for="fyTarget">FY Target:</label>
-                <input type="number" id="fyTarget" name="FY Target" placeholder="E.g., 100000" required>
+                    <label for="fyTarget">FY Target:</label>
+                    <input type="number" id="fyTarget" name="FY Target" placeholder="E.g., 100000" required>
+                </div>
+                <div class="form-group">
+                    <label for="fyAchmt">FY Achmt:</label>
+                    <input type="number" id="fyAchmt" name="FY Achmt" placeholder="E.g., 95000" required>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="fyAchmt">FY Achmt:</label>
-                <input type="number" id="fyAchmt" name="FY Achmt" placeholder="E.g., 95000" required>
-            </div>
-
-            <div class="form-group">
-                <label for="quarterTarget">Quarter Target:</label>
-                <input type="number" id="quarterTarget" name="Quarter Target" placeholder="E.g., 25000" required>
-            </div>
-
+            <div class="grid-row">
+                <div class="form-group">
+                    <label for="quarterTarget">Quarter Target:</label>
+                    <input type="number" id="quarterTarget" name="Quarter Target" placeholder="E.g., 25000" required>
+                </div>
                 <div class="form-group">
                     <label for="quarterAchmt">Quarter Achievement:</label>
                     <input type="number" id="quarterAchmt" name="Quarter Achievement" placeholder="E.g., 23000" required>
                 </div>
+            </div>
 
+            <div class="grid-row">
                 <div class="form-group">
                     <label for="monthTarget">Month Target:</label>
                     <input type="number" id="monthTarget" name="Month Target" placeholder="E.g., 8000" required>
                 </div>
-
                 <div class="form-group">
                     <label for="monthAchmt">Month Achievement:</label>
                     <input type="number" id="monthAchmt" name="Month Achievement" placeholder="E.g., 7500" required>
                 </div>
+            </div>
 
+            <div class="grid-row">
                 <div class="form-group">
                     <label for="week1Target">WEEK 1 Target:</label>
                     <input type="number" id="week1Target" name="WEEK 1 Target" placeholder="E.g., 2000">
@@ -131,7 +179,9 @@
                     <label for="week1Achmt">WEEK 1 Achmt:</label>
                     <input type="number" id="week1Achmt" name="WEEK 1 Achmt" placeholder="E.g., 1800">
                 </div>
+            </div>
 
+            <div class="grid-row">
                 <div class="form-group">
                     <label for="week2Target">WEEK 2 Target:</label>
                     <input type="number" id="week2Target" name="WEEK 2 Target" placeholder="E.g., 2000">
@@ -140,7 +190,9 @@
                     <label for="week2Achmt">WEEK 2 Achmt:</label>
                     <input type="number" id="week2Achmt" name="WEEK 2 Achmt" placeholder="E.g., 1900">
                 </div>
+            </div>
 
+            <div class="grid-row">
                 <div class="form-group">
                     <label for="week3Target">WEEK 3 Target:</label>
                     <input type="number" id="week3Target" name="WEEK 3 Target" placeholder="E.g., 2000">
@@ -149,18 +201,17 @@
                     <label for="week3Achmt">WEEK 3 Achmt:</label>
                     <input type="number" id="week3Achmt" name="WEEK 3 Achmt" placeholder="E.g., 2100">
                 </div>
+            </div>
 
+            <div class="grid-row">
                 <div class="form-group">
                     <label for="week4Target">WEEK 4 Target:</label>
                     <input type="number" id="week4Target" name="WEEK 4 Target" placeholder="E.g., 2000">
                 </div>
-<div class="form-group">
+                <div class="form-group">
                     <label for="week4Achmt">WEEK 4 Achmt:</label>
                     <input type="number" id="week4Achmt" name="WEEK 4 Achmt" placeholder="E.g., 2100">
                 </div>
-               <div class="form-group">
-                <label for="employeeName">Employee name:</label>
-                <input type="text" id="employeeName" name="Employee name" placeholder="E.g., John Doe" required>
             </div>
 
             <button type="submit">Submit Performance Data</button>
