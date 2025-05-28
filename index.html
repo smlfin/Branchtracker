@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Branch Performance Tracker</title>
+    <style>
+        /* Basic CSS for styling to make the form presentable */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f7f9fc;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #0056b3;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: calc(100% - 22px); /* Account for padding and border */
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box; /* Include padding in width */
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 600px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            display: block;
+            width: 100%;
+            margin-top: 30px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .success-message {
+            color: #28a745;
+            font-weight: bold;
+            margin-top: 20px;
+            text-align: center;
+            display: none; /* Hidden by default */
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Branch Performance Data Entry</h1>
+
+        <form name="branch_performance_tracker" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+            <p class="hidden">
+                <label>Don’t fill this out if you’re human: <input name="bot-field" /></label>
+            </p>
+
+            <div class="grid-container">
+                <div class="form-group">
+                    <label for="branch">Branch:</label>
+                    <select id="branch" name="Branch" required>
+                        <option value="">Select Branch</option>
+                        <option value="Alathur">Alathur</option>
+                        <option value="Angamaly">Angamaly</option>
+                        <option value="Chengannur">Chengannur</option>
+			<option value="Edappally">Edappally</option>
+			<option value="Harippad">Harippad</option>
+			<option value="Kattapana">Kattapana</option>
+			<option value="Koduvayur">Koduvayur</option>
+			<option value="Kottayam">Kottayam</option>
+			<option value="Kuzhalmannam">Kuzhalmannam</option>
+			<option value="Mattancherry">Mattancherry</option>
+			<option value="Mavelikara">Mavelikara</option>
+			<option value="Muvattupuzha">Muvattupuzha</option>
+			<option value="Nedumkandom">Nedumkandom</option>
+			<option value="Nenmara">Nenmara</option>
+			<option value="Paravoor">Paravoor</option>
+			<option value="Perumbavoor">Perumbavoor</option>
+			<option value="Thiruvalla">Thiruvalla</option>
+			<option value="Thiruwillamala">Thiruwillamala</option>
+			<option value="Thodupuzha">Thodupuzha</option>
+
+                        <option value="Headquarters">Headquarters</option>
+                        </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="employeeName">Employee name:</label>
+                    <input type="text" id="employeeName" name="Employee name" placeholder="E.g., John Doe" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="fyTarget">FY Target:</label>
+                    <input type="number" id="fyTarget" name="FY Target" placeholder="E.g., 100000" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="fyAchmt">FY Achmt:</label>
+                    <input type="number" id="fyAchmt" name="FY Achmt" placeholder="E.g., 95000" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="quarterTarget">Quarter Target:</label>
+                    <input type="number" id="quarterTarget" name="Quarter Target" placeholder="E.g., 25000" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="quarterAchmt">Quarter Achievement:</label>
+                    <input type="number" id="quarterAchmt" name="Quarter Achievement" placeholder="E.g., 23000" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="monthTarget">Month Target:</label>
+                    <input type="number" id="monthTarget" name="Month Target" placeholder="E.g., 8000" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="monthAchmt">Month Achievement:</label>
+                    <input type="number" id="monthAchmt" name="Month Achievement" placeholder="E.g., 7500" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="week1Target">WEEK 1 Target:</label>
+                    <input type="number" id="week1Target" name="WEEK 1 Target" placeholder="E.g., 2000">
+                </div>
+                <div class="form-group">
+                    <label for="week1Achmt">WEEK 1 Achmt:</label>
+                    <input type="number" id="week1Achmt" name="WEEK 1 Achmt" placeholder="E.g., 1800">
+                </div>
+
+                <div class="form-group">
+                    <label for="week2Target">WEEK 2 Target:</label>
+                    <input type="number" id="week2Target" name="WEEK 2 Target" placeholder="E.g., 2000">
+                </div>
+                <div class="form-group">
+                    <label for="week2Achmt">WEEK 2 Achmt:</label>
+                    <input type="number" id="week2Achmt" name="WEEK 2 Achmt" placeholder="E.g., 1900">
+                </div>
+
+                <div class="form-group">
+                    <label for="week3Target">WEEK 3 Target:</label>
+                    <input type="number" id="week3Target" name="WEEK 3 Target" placeholder="E.g., 2000">
+                </div>
+                <div class="form-group">
+                    <label for="week3Achmt">WEEK 3 Achmt:</label>
+                    <input type="number" id="week3Achmt" name="WEEK 3 Achmt" placeholder="E.g., 2100">
+                </div>
+
+                <div class="form-group">
+                    <label for="week4Target">WEEK 4 Target:</label>
+                    <input type="number" id="week4Target" name="WEEK 4 Target" placeholder="E.g., 2000">
+                </div>
+                </div> <button type="submit">Submit Performance Data</button>
+            <p class="success-message" id="successMessage">Data submitted successfully!</p>
+        </form>
+    </div>
+</body>
+</html>
