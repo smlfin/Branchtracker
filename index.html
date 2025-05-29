@@ -4,39 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Branch Performance Tracker</title>
-    <link href="style.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet"> </head>
 <body>
     <div class="container">
         <h1 id="mainTitle">Branchtracker</h1>
         <h2 id="formTitle">Daily/Weekly/Monthly/Quarterly Performance Submission</h2>
 
-        <form id="performanceForm">
-            <div class="form-group">
-    <label for="branch">Branch:</label>
-    <select id="branch" name="Branch" required>
-        <option value="">Select Branch</option>
-        <option value="Alathur">Alathur</option>
-        <option value="Angamaly">Angamaly</option>
-        <option value="Chengannur">Chengannur</option>
-        <option value="Edappally">Edappally</option>
-        <option value="Harippad">Harippad</option>
-        <option value="Kattapana">Kattapana</option>
-        <option value="Koduvayur">Koduvayur</option>
-        <option value="Kottayam">Kottayam</option>
-        <option value="Kuzhalmannam">Kuzhalmannam</option>
-        <option value="Mattancherry">Mattancherry</option>
-        <option value="Mavelikara">Mavelikara</option>
-        <option value="Muvattupuzha">Muvattupuzha</option>
-        <option value="Nedumkandom">Nedumkandom</option>
-        <option value="Nenmara">Nenmara</option>
-        <option value="Paravoor">Paravoor</option>
-        <option value="Perumbavoor">Perumbavoor</option>
-        <option value="Thiruvalla">Thiruvalla</option>
-        <option value="Thiruwillamala">Thiruwillamala</option>
-        <option value="Thodupuzha">Thodupuzha</option>
-        <option value="Headquarters">Headquarters</option>
-    </select>
-</div>
+        <form id="myForm"> <div class="form-group">
+                <label for="branch">Branch:</label>
+                <select id="branch" name="Branch" required>
+                    <option value="">Select Branch</option>
+                    <option value="Alathur">Alathur</option>
+                    <option value="Angamaly">Angamaly</option>
+                    <option value="Chengannur">Chengannur</option>
+                    <option value="Edappally">Edappally</option>
+                    <option value="Harippad">Harippad</option>
+                    <option value="Kattapana">Kattapana</option>
+                    <option value="Koduvayur">Koduvayur</option>
+                    <option value="Kottayam">Kottayam</option>
+                    <option value="Kuzhalmannam">Kuzhalmannam</option>
+                    <option value="Mattancherry">Mattancherry</option>
+                    <option value="Mavelikara">Mavelikara</option>
+                    <option value="Muvattupuzha">Muvattupuzha</option>
+                    <option value="Nedumkandom">Nedumkandom</option>
+                    <option value="Nenmara">Nenmara</option>
+                    <option value="Paravoor">Paravoor</option>
+                    <option value="Perumbavoor">Perumbavoor</option>
+                    <option value="Thiruvalla">Thiruvalla</option>
+                    <option value="Thiruwillamala">Thiruwillamala</option>
+                    <option value="Thodupuzha">Thodupuzha</option>
+                    <option value="Headquarters">Headquarters</option>
+                </select>
+            </div>
             <div class="form-group">
                 <label for="employeeName">Employee Name:</label>
                 <input type="text" id="employeeName" name="Employee name" required>
@@ -332,393 +331,13 @@
 
         <div id="formSuccessMessage" class="message success-message" style="display: none;">
             <p>Data submitted successfully! Thank you.</p>
-            <button onclick="resetForm()">Submit New Data</button>
+            <button onclick="resetFormFieldsAndMessages()">Submit New Data</button>
         </div>
         <div id="formErrorMessage" class="message error-message" style="display: none;">
             <p>An error occurred during submission. Please try again.</p>
-            <button onclick="resetForm()">Try Again</button>
+            <button onclick="resetFormFieldsAndMessages()">Try Again</button>
         </div>
     </div>
 
-    <script>
-        const form = document.getElementById('performanceForm');
-        const formTitle = document.getElementById('formTitle');
-        const successMessage = document.getElementById('formSuccessMessage');
-        const errorMessage = document.getElementById('formErrorMessage');
-        const userRoleSelect = document.getElementById('userRole');
-
-        // Select all relevant input fields using their classes/attributes
-        const outstandingFields = document.querySelectorAll('.outstanding-field');
-        const netGrowthPeriodGroups = document.querySelectorAll('.net-growth-period-group');
-        const freshCustomerPeriodGroups = document.querySelectorAll('.fresh-customer-period-group');
-        const visitsPeriodGroups = document.querySelectorAll('.visits-period-group');
-        const callsPeriodGroups = document.querySelectorAll('.calls-period-group');
-
-        const actualCustomerBaseField = document.getElementById('actualCustomerBase');
-
-
-        // IMPORTANT: Replace this with YOUR Google Apps Script Web App URL
-        const appsScriptURL = 'https://script.google.com/macros/s/AKfycbxnNMtVjeHh4M87Pn61_jxzcs902win5sToqQQDRR6_RFKckZOsk9zZlDbGD2juW7NC/exec'; // Ensure this is your correct and public URL
-
-        // Global variable to store fetched data
-        let fetchedData = null; // Will store { latestValues, capturedPeriods, currentQuarterName, currentMonth, currentYear }
-
-        // Admin override from URL parameter
-        const urlParams = new URLSearchParams(window.location.search);
-        const isAdmin = urlParams.get('admin') === 'true';
-
-        // Helper function to get quarter name from month (0-indexed)
-        function getQuarterName(monthIndex) {
-            if (monthIndex >= 0 && monthIndex <= 2) return 'Q1'; // Jan-Mar
-            if (monthIndex >= 3 && monthIndex <= 5) return 'Q2'; // Apr-Jun
-            if (monthIndex >= 6 && monthIndex <= 8) return 'Q3'; // Jul-Sep
-            if (monthIndex >= 9 && monthIndex <= 11) return 'Q4'; // Oct-Dec
-            return '';
-        }
-
-        /**
-         * Determines the Nth Monday-Saturday week of the month a date falls into.
-         * Returns 0 if no valid week is found within the current month context.
-         */
-        function getWeekNumberOfMonth(date) {
-            const d = new Date(date);
-            d.setHours(0, 0, 0, 0); // Normalize to start of day
-
-            const year = d.getFullYear();
-            const month = d.getMonth(); // 0-indexed
-
-            // If the day is Sunday, it cannot be part of a Mon-Sat week
-            if (d.getDay() === 0) { // Sunday
-                return 0;
-            }
-
-            let weekNumber = 0;
-            let tempDate = new Date(year, month, 1); // Start checking from 1st of the month
-
-            // Find the first Monday of the month
-            while (tempDate.getDay() !== 1) { // 1 is Monday
-                tempDate.setDate(tempDate.getDate() + 1);
-                if (tempDate.getMonth() !== month) {
-                    // If we cross into the next month before finding the first Monday,
-                    // it means there are no Mon-Sat weeks starting in this month that could contain 'd'.
-                    return 0;
-                }
-            }
-
-            // Now tempDate is the first Monday of the month
-            for (let i = 1; i <= 4; i++) { // Check for weeks 1 through 4
-                const weekStart = new Date(tempDate);
-                const weekEnd = new Date(tempDate);
-                weekEnd.setDate(weekEnd.getDate() + 5); // Saturday of the current week
-
-                // Check if the input date 'd' falls within this Mon-Sat range
-                if (d.getTime() >= weekStart.getTime() && d.getTime() <= weekEnd.getTime()) {
-                    weekNumber = i;
-                    break; // Found the week, exit loop
-                }
-
-                // Move tempDate to the Monday of the next week for the next iteration
-                tempDate.setDate(tempDate.getDate() + 7);
-                // If we cross into the next month, it means there are no more full Mon-Sat weeks
-                // starting within the current month for 'd' to possibly fall into.
-                if (tempDate.getMonth() !== month) {
-                    break;
-                }
-            }
-            return weekNumber;
-        }
-
-
-        /**
-         * Hides a form field group (its parent .form-group) and optionally sets its value.
-         * Also disables the input field itself if it's currently visible.
-         */
-        function hideFieldGroup(field, value = '') {
-            const parentGroup = field.closest('.form-group');
-            if (parentGroup) {
-                parentGroup.classList.add('hidden-field-group');
-                field.disabled = true; // Disable the field so its value isn't sent
-            }
-            field.value = value;
-        }
-
-        /**
-         * Shows a form field group and clears its value.
-         * Enables the input field.
-         */
-        function showFieldGroup(field) {
-            const parentGroup = field.closest('.form-group');
-            if (parentGroup) {
-                parentGroup.classList.remove('hidden-field-group');
-                field.disabled = false; // Enable the field
-            }
-            field.value = '';
-        }
-
-        /**
-         * Main function to initialize and apply form field logic.
-         * Fetches data, applies role-based, period-based, and week-based showing/hiding.
-         */
-        async function initializeFormFields() {
-            // Initially hide all relevant field groups and disable all inputs
-            // This ensures a clean state before applying specific visibility logic
-            document.querySelectorAll('input, select').forEach(field => {
-                const parentGroup = field.closest('.form-group');
-                if (parentGroup && !['branch', 'employeeName', 'userRole', 'actualCustomerBase'].includes(field.id)) {
-                    // Hide and disable all except core fields initially
-                    parentGroup.classList.add('hidden-field-group');
-                }
-                field.disabled = true; // Disable all by default
-                // Remove any old styling classes just in case
-                if (field.parentElement.classList.contains('disabled-field-group')) {
-                    field.parentElement.classList.remove('disabled-field-group');
-                }
-            });
-
-
-            // Always ensure core fields are visible and enabled
-            document.getElementById('branch').disabled = false;
-            document.getElementById('branch').closest('.form-group').classList.remove('hidden-field-group');
-
-            document.getElementById('employeeName').disabled = false;
-            document.getElementById('employeeName').closest('.form-group').classList.remove('hidden-field-group');
-
-            userRoleSelect.disabled = false;
-            userRoleSelect.closest('.form-group').classList.remove('hidden-field-group');
-
-
-            if (isAdmin) {
-                console.log("Admin mode: All fields are enabled and visible.");
-                document.querySelectorAll('input, select').forEach(field => {
-                    field.disabled = false;
-                    const parentGroup = field.closest('.form-group');
-                    if (parentGroup) {
-                        parentGroup.classList.remove('hidden-field-group');
-                    }
-                    field.parentElement.classList.remove('disabled-field-group'); // Clean up old disabled class
-                });
-                return; // Exit if in admin mode
-            }
-
-            // Fetch data from Apps Script
-            try {
-                const response = await fetch(appsScriptURL);
-                if (!response.ok) {
-                    const errorText = await response.text(); // Read potential error message from server
-                    throw new Error(`HTTP error! status: ${response.status}. Response: ${errorText}`);
-                }
-                fetchedData = await response.json(); // Store for later use
-                console.log("Fetched Data:", fetchedData);
-
-                if (fetchedData.error) {
-                    console.error("Apps Script Error:", fetchedData.error);
-                    alert("Error fetching data from sheet: " + fetchedData.error);
-                    return;
-                }
-
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                alert('Failed to load previous data. Please check your internet connection or try again later.');
-                return;
-            }
-
-            const { latestValues, capturedPeriods, currentQuarterName, currentMonth, currentYear } = fetchedData;
-            const selectedRole = userRoleSelect.value;
-            const today = new Date();
-            const currentWeekNumber = getWeekNumberOfMonth(today);
-
-            // --- Apply Logic for Each Category ---
-
-            // Outstanding Category Logic (Role-based and Period-based hiding)
-            outstandingFields.forEach(field => {
-                const category = field.closest('.outstanding-period-group').dataset.category; // "Outstanding"
-                const period = field.closest('.outstanding-period-group').dataset.period; // "FY", "Quarter", "Month"
-                const fieldName = field.name;
-                const parentGroup = field.closest('.form-group');
-
-                if (selectedRole === 'Others') {
-                    // If "Others", hide all outstanding fields and show latest value
-                    hideFieldGroup(field, latestValues[fieldName] || '');
-                } else { // Branch in Charge
-                    if (period === 'FY') {
-                        // FY fields for Outstanding are always editable for Branch in Charge
-                        showFieldGroup(field);
-                        field.value = latestValues[fieldName] || ''; // Populate if exists
-                    } else if (period === 'Quarter') {
-                        const captureKey = `${category}_${currentQuarterName}_${currentYear}`;
-                        if (capturedPeriods[captureKey]) {
-                            hideFieldGroup(field, latestValues[fieldName] || ''); // Hide if captured
-                        } else {
-                            showFieldGroup(field);
-                            field.value = latestValues[fieldName] || '';
-                        }
-                    } else if (period === 'Month') {
-                        const captureKey = `${category}_${currentMonth}_${currentYear}`;
-                        if (capturedPeriods[captureKey]) {
-                            hideFieldGroup(field, latestValues[fieldName] || ''); // Hide if captured
-                        } else {
-                            showFieldGroup(field);
-                            field.value = latestValues[fieldName] || '';
-                        }
-                    }
-                }
-            });
-
-            // Net Growth Target, Fresh Customer, Visits, Calls Logic (Period-based, including Weekly)
-            const categoriesToProcess = [
-                { id: 'net-growth', groups: netGrowthPeriodGroups },
-                { id: 'fresh-customer', groups: freshCustomerPeriodGroups },
-                { id: 'visits', groups: visitsPeriodGroups },
-                { id: 'calls', groups: callsPeriodGroups }
-            ];
-
-            categoriesToProcess.forEach(cat => {
-                cat.groups.forEach(group => {
-                    const category = group.dataset.category; // e.g., "Net Growth", "Fresh Customer", "Visits", "Calls"
-                    const period = group.dataset.period; // "FY", "Quarter", "Month", "Week"
-                    const inputFields = group.querySelectorAll('input');
-
-                    inputFields.forEach(field => {
-                        const fieldName = field.name;
-
-                        if (period === 'FY') {
-                            // FY for these categories are always visible and editable.
-                            showFieldGroup(field);
-                            field.value = latestValues[fieldName] || '';
-                        } else if (period === 'Quarter') {
-                            const captureKey = `${category}_${currentQuarterName}_${currentYear}`;
-                            if (capturedPeriods[captureKey]) {
-                                hideFieldGroup(field, latestValues[fieldName] || ''); // Hide if captured
-                            } else {
-                                showFieldGroup(field);
-                                field.value = latestValues[fieldName] || '';
-                            }
-                        } else if (period === 'Month') {
-                            const captureKey = `${category}_${currentMonth}_${currentYear}`;
-                            if (capturedPeriods[captureKey]) {
-                                hideFieldGroup(field, latestValues[fieldName] || ''); // Hide if captured
-                            } else {
-                                showFieldGroup(field);
-                                field.value = latestValues[fieldName] || '';
-                            }
-                        } else if (period === 'Week') {
-                            const fieldWeek = parseInt(field.dataset.week);
-                            if (fieldWeek === currentWeekNumber) {
-                                showFieldGroup(field); // Only show fields for the current week
-                                field.value = latestValues[fieldName] || '';
-                            } else {
-                                hideFieldGroup(field, latestValues[fieldName] || ''); // Hide other weekly fields
-                            }
-                        }
-                    });
-                });
-            });
-
-            // Actual Customer Base (single field, always enabled, show latest value)
-            if (actualCustomerBaseField) {
-                showFieldGroup(actualCustomerBaseField);
-                actualCustomerBaseField.value = latestValues[actualCustomerBaseField.name] || '';
-            }
-
-            // Final check: if user role isn't selected, keep relevant fields hidden/disabled
-            if (selectedRole === '') {
-                outstandingFields.forEach(field => hideFieldGroup(field, '')); // Hide Outstanding if role not set
-            }
-
-            // Ensure Branch and Employee Name are always visible and enabled after all other logic
-            document.getElementById('branch').disabled = false;
-            document.getElementById('employeeName').disabled = false;
-            document.getElementById('branch').closest('.form-group').classList.remove('hidden-field-group');
-            document.getElementById('employeeName').closest('.form-group').classList.remove('hidden-field-group');
-        }
-
-
-        // Event listener for User Role dropdown to trigger form update
-        userRoleSelect.addEventListener('change', initializeFormFields);
-
-        // Initial form setup when the DOM is fully loaded
-        document.addEventListener('DOMContentLoaded', initializeFormFields);
-
-
-        // Form submission handler
-        form.addEventListener('submit', async function(event) {
-            event.preventDefault();
-
-            successMessage.style.display = 'none';
-            errorMessage.style.display = 'none';
-
-            const submitButton = form.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
-            submitButton.textContent = 'Submitting...';
-
-            const formData = new FormData(form);
-
-            // Filter out disabled fields to avoid sending old values
-            const dataToSend = {};
-            for (let [key, value] of formData.entries()) {
-                const inputElement = form.elements[key];
-                // Only include fields that are not disabled
-                // Also, exclude "bot-field" if it exists (hidden honey pot field)
-                if (inputElement && !inputElement.disabled && key !== 'bot-field') {
-                    dataToSend[key] = value;
-                }
-            }
-            
-            // Add current timestamp for form submission (optional, but good for tracking client time)
-            // This is separate from the Apps Script timestamp
-            dataToSend['Client Submit Timestamp'] = new Date().toISOString();
-
-
-            try {
-                // Use URLSearchParams for x-www-form-urlencoded to match Apps Script's e.parameter
-                const response = await fetch(appsScriptURL, {
-                    method: 'POST',
-                    body: new URLSearchParams(dataToSend),
-                });
-
-                if (response.ok) {
-                    const resultText = await response.text();
-                    console.log("Apps Script response text:", resultText);
-
-                    if (resultText.trim() === 'Success') {
-                        form.style.display = 'none';
-                        formTitle.style.display = 'none';
-                        successMessage.style.display = 'block';
-                        form.reset(); // Clear form values
-                        initializeFormFields(); // Re-initialize to show correct fields after reset
-                    } else {
-                        console.error("Apps Script returned unexpected text:", resultText);
-                        errorMessage.querySelector('p').textContent = `Submission failed: Unexpected response from server.`;
-                        errorMessage.style.display = 'block';
-                    }
-                } else {
-                    console.error("HTTP Error during submission:", response.status, response.statusText);
-                    errorMessage.querySelector('p').textContent = `Server error: ${response.status} ${response.statusText}. Please try again.`;
-                    errorMessage.style.display = 'block';
-                }
-            } catch (error) {
-                console.error('Error submitting form:', error);
-                errorMessage.querySelector('p').textContent = `Network error: ${error.message}. Please check your connection.`;
-                errorMessage.style.display = 'block';
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = 'Submit Performance Data';
-            }
-        });
-
-        /**
-         * Resets the form after submission or error.
-         * Hides messages, shows form, clears values, and re-applies dynamic logic.
-         */
-        function resetForm() {
-            successMessage.style.display = 'none';
-            errorMessage.style.display = 'none';
-            formTitle.style.display = 'block';
-            form.style.display = 'block';
-            form.reset(); // Reset all form fields to their default empty state
-            userRoleSelect.value = ''; // Ensure role is reset
-            initializeFormFields(); // IMPORTANT: Re-apply hiding/showing logic and re-fetch data
-        }
-    </script>
-</body>
+    <script src="script.js"></script> </body>
 </html>
