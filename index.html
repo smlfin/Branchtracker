@@ -4,206 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Branch Performance Tracker</title>
- <link rel="stylesheet" href="style.css"> </head>
-    <body>
-<script>
-       /* General Body and Container Styles */
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #eef1f5; /* Light background */
-    margin: 0;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; /* Align to the top */
-    min-height: 100vh;
-    box-sizing: border-box;
-}
-
-.container {
-    background-color: #ffffff;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    max-width: 900px; /* Wider container */
-    width: 100%;
-    box-sizing: border-box;
-}
-
-h1, h2, h3 {
-    color: #333;
-    text-align: center;
-    margin-bottom: 20px;
-    font-weight: 600;
-}
-
-h1 {
-    font-size: 2.2em;
-    color: #0056b3;
-    margin-top: 0;
-}
-
-h2 {
-    font-size: 1.8em;
-    color: #444;
-}
-
-h3 {
-    font-size: 1.4em;
-    color: #555;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 10px;
-    margin-top: 30px;
-}
-
-/* Form Group and Input Styles */
-.form-group {
-    margin-bottom: 18px;
-    display: flex;
-    flex-direction: column;
-}
-
-label {
-    display: block;
-    margin-bottom: 8px;
-    color: #555;
-    font-weight: 500;
-    font-size: 0.95em;
-}
-
-input[type="text"],
-input[type="number"],
-select {
-    width: 100%;
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-sizing: border-box;
-    font-size: 1em;
-    color: #333;
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-input[type="text"]:focus,
-input[type="number"]:focus,
-select:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
-    outline: none;
-}
-
-/* Field Sections (for period groups like Outstanding, Net Growth) */
-.outstanding-period-group,
-.net-growth-period-group,
-.fresh-customer-period-group,
-.visits-period-group,
-.calls-period-group {
-    background-color: #f9f9f9;
-    border: 1px solid #eee;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 25px;
-    display: grid; /* Use grid for internal layout */
-    gap: 15px; /* Spacing between grid items */
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsive columns */
-    align-items: end; /* Align items to the bottom */
-}
-
-/* Styling for hidden fields */
-.hidden-field-group {
-    display: none !important; /* Forces the group to be hidden */
-}
-
-/* Button Styles */
-button[type="submit"] {
-    background-color: #28a745; /* Green submit button */
-    color: white;
-    padding: 15px 25px;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.1em;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s;
-    width: 100%;
-    margin-top: 20px;
-    font-weight: 600;
-}
-
-button[type="submit"]:hover {
-    background-color: #218838;
-    transform: translateY(-2px);
-}
-
-button[type="submit"]:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* Message Styles */
-.message {
-    padding: 15px;
-    border-radius: 8px;
-    margin-top: 20px;
-    text-align: center;
-    font-size: 1.1em;
-    font-weight: 500;
-}
-
-.success-message {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
-
-.error-message {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-
-.message button {
-    background-color: #007bff;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 0.9em;
-    cursor: pointer;
-    margin-top: 15px;
-    transition: background-color 0.3s;
-}
-
-.message button:hover {
-    background-color: #0056b3;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .container {
-        padding: 20px;
-    }
-    h1 {
-        font-size: 1.8em;
-    }
-    h2 {
-        font-size: 1.5em;
-    }
-    h3 {
-        font-size: 1.2em;
-    }
-    .outstanding-period-group,
-    .net-growth-period-group,
-    .fresh-customer-period-group,
-    .visits-period-group,
-    .calls-period-group {
-        grid-template-columns: 1fr; /* Single column on smaller screens */
-        padding: 15px;
-    }
-}
-    </script>
+    <link rel="stylesheet" href="style.css"> </head>
+<body>
     <div class="container">
-        <h1>Branchtracker</h1> <h2 id="formTitle">Daily/Weekly/Monthly/Quarterly Performance Submission</h2>
+        <h1 id="mainTitle">Branchtracker</h1>
+        <h2 id="formTitle">Daily/Weekly/Monthly/Quarterly Performance Submission</h2>
 
         <form id="performanceForm">
             <div class="form-group">
@@ -500,7 +305,6 @@ button[type="submit"]:disabled {
                 </div>
             </div>
 
-
             <button type="submit">Submit Performance Data</button>
         </form>
 
@@ -512,12 +316,14 @@ button[type="submit"]:disabled {
             <p>An error occurred during submission. Please try again.</p>
             <button onclick="resetForm()">Try Again</button>
         </div>
-    </div> <script>
+    </div>
+
+    <script>
         const form = document.getElementById('performanceForm');
         const formTitle = document.getElementById('formTitle');
         const successMessage = document.getElementById('formSuccessMessage');
         const errorMessage = document.getElementById('formErrorMessage');
-        const userRoleSelect = document.getElementById('userRole'); // This should now work!
+        const userRoleSelect = document.getElementById('userRole');
 
         // Select all relevant input fields using their classes/attributes
         const outstandingFields = document.querySelectorAll('.outstanding-field');
@@ -530,7 +336,7 @@ button[type="submit"]:disabled {
 
 
         // IMPORTANT: Replace this with YOUR Google Apps Script Web App URL
-        const appsScriptURL = 'https://script.google.com/macros/s/AKfycbxnNMtVjeHh4M87Pn61_jxzcs902win5sToqQQDRR6_RFKckZOsk9zZlDbGD2juW7NC/exec';
+        const appsScriptURL = 'https://script.google.com/macros/s/AKfycbxnNMtVjeHh4M87Pn61_jxzcs902win5sToqQQDRR6_RFKckZOsk9zZlDbGD2juW7NC/exec'; // Ensure this is your correct and public URL
 
         // Global variable to store fetched data
         let fetchedData = null; // Will store { latestValues, capturedPeriods, currentQuarterName, currentMonth, currentYear }
@@ -602,49 +408,72 @@ button[type="submit"]:disabled {
 
 
         /**
-         * Disables a form field and optionally sets its value.
-         * Adds 'disabled-field-group' class to the parent .form-group for styling.
+         * Hides a form field group (its parent .form-group) and optionally sets its value.
+         * Also disables the input field itself if it's currently visible.
          */
-        function disableField(field, value = '') {
-            field.disabled = true;
+        function hideFieldGroup(field, value = '') {
+            const parentGroup = field.closest('.form-group');
+            if (parentGroup) {
+                parentGroup.classList.add('hidden-field-group');
+                field.disabled = true; // Disable the field so its value isn't sent
+            }
             field.value = value;
-            field.parentElement.classList.add('disabled-field-group');
         }
 
         /**
-         * Enables a form field and clears its value.
-         * Removes 'disabled-field-group' class from the parent .form-group.
+         * Shows a form field group and clears its value.
+         * Enables the input field.
          */
-        function enableField(field) {
-            field.disabled = false;
+        function showFieldGroup(field) {
+            const parentGroup = field.closest('.form-group');
+            if (parentGroup) {
+                parentGroup.classList.remove('hidden-field-group');
+                field.disabled = false; // Enable the field
+            }
             field.value = '';
-            field.parentElement.classList.remove('disabled-field-group');
         }
 
         /**
          * Main function to initialize and apply form field logic.
-         * Fetches data, applies role-based, period-based, and week-based disabling.
+         * Fetches data, applies role-based, period-based, and week-based showing/hiding.
          */
         async function initializeFormFields() {
-            // First, disable all fields temporarily, they will be enabled based on logic
+            // Initially hide all relevant field groups and disable all inputs
+            // This ensures a clean state before applying specific visibility logic
             document.querySelectorAll('input, select').forEach(field => {
-                field.disabled = true; // Disable all
+                const parentGroup = field.closest('.form-group');
+                if (parentGroup && !['branch', 'employeeName', 'userRole', 'actualCustomerBase'].includes(field.id)) {
+                    // Hide and disable all except core fields initially
+                    parentGroup.classList.add('hidden-field-group');
+                }
+                field.disabled = true; // Disable all by default
+                // Remove any old styling classes just in case
                 if (field.parentElement.classList.contains('disabled-field-group')) {
                     field.parentElement.classList.remove('disabled-field-group');
                 }
             });
 
-            // Always enable Branch, Employee Name, and User Role for basic form operation
+
+            // Always ensure core fields are visible and enabled
             document.getElementById('branch').disabled = false;
+            document.getElementById('branch').closest('.form-group').classList.remove('hidden-field-group');
+
             document.getElementById('employeeName').disabled = false;
+            document.getElementById('employeeName').closest('.form-group').classList.remove('hidden-field-group');
+
             userRoleSelect.disabled = false;
+            userRoleSelect.closest('.form-group').classList.remove('hidden-field-group');
 
 
             if (isAdmin) {
-                console.log("Admin mode: All fields are enabled.");
+                console.log("Admin mode: All fields are enabled and visible.");
                 document.querySelectorAll('input, select').forEach(field => {
                     field.disabled = false;
-                    field.parentElement.classList.remove('disabled-field-group');
+                    const parentGroup = field.closest('.form-group');
+                    if (parentGroup) {
+                        parentGroup.classList.remove('hidden-field-group');
+                    }
+                    field.parentElement.classList.remove('disabled-field-group'); // Clean up old disabled class
                 });
                 return; // Exit if in admin mode
             }
@@ -653,7 +482,8 @@ button[type="submit"]:disabled {
             try {
                 const response = await fetch(appsScriptURL);
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorText = await response.text(); // Read potential error message from server
+                    throw new Error(`HTTP error! status: ${response.status}. Response: ${errorText}`);
                 }
                 fetchedData = await response.json(); // Store for later use
                 console.log("Fetched Data:", fetchedData);
@@ -677,33 +507,35 @@ button[type="submit"]:disabled {
 
             // --- Apply Logic for Each Category ---
 
-            // Outstanding Category Logic (Role-based and Period-based)
+            // Outstanding Category Logic (Role-based and Period-based hiding)
             outstandingFields.forEach(field => {
                 const category = field.closest('.outstanding-period-group').dataset.category; // "Outstanding"
                 const period = field.closest('.outstanding-period-group').dataset.period; // "FY", "Quarter", "Month"
                 const fieldName = field.name;
+                const parentGroup = field.closest('.form-group');
 
                 if (selectedRole === 'Others') {
-                    disableField(field, latestValues[fieldName] || ''); // Disable and show value if available
+                    // If "Others", hide all outstanding fields and show latest value
+                    hideFieldGroup(field, latestValues[fieldName] || '');
                 } else { // Branch in Charge
                     if (period === 'FY') {
                         // FY fields for Outstanding are always editable for Branch in Charge
-                        enableField(field);
+                        showFieldGroup(field);
                         field.value = latestValues[fieldName] || ''; // Populate if exists
                     } else if (period === 'Quarter') {
                         const captureKey = `${category}_${currentQuarterName}_${currentYear}`;
                         if (capturedPeriods[captureKey]) {
-                            disableField(field, latestValues[fieldName] || '');
+                            hideFieldGroup(field, latestValues[fieldName] || ''); // Hide if captured
                         } else {
-                            enableField(field);
+                            showFieldGroup(field);
                             field.value = latestValues[fieldName] || '';
                         }
                     } else if (period === 'Month') {
                         const captureKey = `${category}_${currentMonth}_${currentYear}`;
                         if (capturedPeriods[captureKey]) {
-                            disableField(field, latestValues[fieldName] || '');
+                            hideFieldGroup(field, latestValues[fieldName] || ''); // Hide if captured
                         } else {
-                            enableField(field);
+                            showFieldGroup(field);
                             field.value = latestValues[fieldName] || '';
                         }
                     }
@@ -728,33 +560,32 @@ button[type="submit"]:disabled {
                         const fieldName = field.name;
 
                         if (period === 'FY') {
-                            // FY for Net Growth only. Other categories don't have FY targets per spec.
-                            // Assuming FY targets are always editable, unless a different rule is defined.
-                            enableField(field);
+                            // FY for these categories are always visible and editable.
+                            showFieldGroup(field);
                             field.value = latestValues[fieldName] || '';
                         } else if (period === 'Quarter') {
                             const captureKey = `${category}_${currentQuarterName}_${currentYear}`;
                             if (capturedPeriods[captureKey]) {
-                                disableField(field, latestValues[fieldName] || '');
+                                hideFieldGroup(field, latestValues[fieldName] || ''); // Hide if captured
                             } else {
-                                enableField(field);
+                                showFieldGroup(field);
                                 field.value = latestValues[fieldName] || '';
                             }
                         } else if (period === 'Month') {
                             const captureKey = `${category}_${currentMonth}_${currentYear}`;
                             if (capturedPeriods[captureKey]) {
-                                disableField(field, latestValues[fieldName] || '');
+                                hideFieldGroup(field, latestValues[fieldName] || ''); // Hide if captured
                             } else {
-                                enableField(field);
+                                showFieldGroup(field);
                                 field.value = latestValues[fieldName] || '';
                             }
                         } else if (period === 'Week') {
                             const fieldWeek = parseInt(field.dataset.week);
                             if (fieldWeek === currentWeekNumber) {
-                                enableField(field);
+                                showFieldGroup(field); // Only show fields for the current week
                                 field.value = latestValues[fieldName] || '';
                             } else {
-                                disableField(field, latestValues[fieldName] || ''); // Show value for other weeks but disabled
+                                hideFieldGroup(field, latestValues[fieldName] || ''); // Hide other weekly fields
                             }
                         }
                     });
@@ -763,18 +594,20 @@ button[type="submit"]:disabled {
 
             // Actual Customer Base (single field, always enabled, show latest value)
             if (actualCustomerBaseField) {
-                enableField(actualCustomerBaseField);
+                showFieldGroup(actualCustomerBaseField);
                 actualCustomerBaseField.value = latestValues[actualCustomerBaseField.name] || '';
             }
 
-            // Final check: if user role isn't selected, keep relevant fields disabled
+            // Final check: if user role isn't selected, keep relevant fields hidden/disabled
             if (selectedRole === '') {
-                outstandingFields.forEach(field => disableField(field, '')); // Disable Outstanding if role not set
+                outstandingFields.forEach(field => hideFieldGroup(field, '')); // Hide Outstanding if role not set
             }
 
-            // Ensure Branch and Employee Name are always enabled after all other logic
+            // Ensure Branch and Employee Name are always visible and enabled after all other logic
             document.getElementById('branch').disabled = false;
             document.getElementById('employeeName').disabled = false;
+            document.getElementById('branch').closest('.form-group').classList.remove('hidden-field-group');
+            document.getElementById('employeeName').closest('.form-group').classList.remove('hidden-field-group');
         }
 
 
@@ -830,6 +663,7 @@ button[type="submit"]:disabled {
                         formTitle.style.display = 'none';
                         successMessage.style.display = 'block';
                         form.reset(); // Clear form values
+                        initializeFormFields(); // Re-initialize to show correct fields after reset
                     } else {
                         console.error("Apps Script returned unexpected text:", resultText);
                         errorMessage.querySelector('p').textContent = `Submission failed: Unexpected response from server.`;
@@ -861,7 +695,7 @@ button[type="submit"]:disabled {
             form.style.display = 'block';
             form.reset(); // Reset all form fields to their default empty state
             userRoleSelect.value = ''; // Ensure role is reset
-            initializeFormFields(); // IMPORTANT: Re-apply disabling/enabling logic and re-fetch data
+            initializeFormFields(); // IMPORTANT: Re-apply hiding/showing logic and re-fetch data
         }
     </script>
 </body>
