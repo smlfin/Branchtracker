@@ -122,6 +122,16 @@
         .go-back-button:hover {
             background-color: #0056b3;
         }
+
+        /* NEW: Style for disabled fields */
+        input:disabled, select:disabled {
+            background-color: #e9ecef; /* Lighter background */
+            cursor: not-allowed;
+            opacity: 0.7; /* Slightly dimmed */
+        }
+        .form-group.disabled-week { /* Optional: style the whole group */
+            opacity: 0.6;
+        }
     </style>
 </head>
 <body>
@@ -201,44 +211,44 @@
             <div class="grid-row">
                 <div class="form-group">
                     <label for="week1Target">WEEK 1 Target:</label>
-                    <input type="number" id="week1Target" name="WEEK 1 Target" placeholder="E.g., 2000">
+                    <input type="number" id="week1Target" name="WEEK 1 Target" placeholder="E.g., 2000" class="week-field" data-week="1">
                 </div>
                 <div class="form-group">
                     <label for="week1Achmt">WEEK 1 Achmt:</label>
-                    <input type="number" id="week1Achmt" name="WEEK 1 Achmt" placeholder="E.g., 1800">
+                    <input type="number" id="week1Achmt" name="WEEK 1 Achmt" placeholder="E.g., 1800" class="week-field" data-week="1">
                 </div>
             </div>
 
             <div class="grid-row">
                 <div class="form-group">
                     <label for="week2Target">WEEK 2 Target:</label>
-                    <input type="number" id="week2Target" name="WEEK 2 Target" placeholder="E.g., 2000">
+                    <input type="number" id="week2Target" name="WEEK 2 Target" placeholder="E.g., 2000" class="week-field" data-week="2">
                 </div>
                 <div class="form-group">
                     <label for="week2Achmt">WEEK 2 Achmt:</label>
-                    <input type="number" id="week2Achmt" name="WEEK 2 Achmt" placeholder="E.g., 1900">
+                    <input type="number" id="week2Achmt" name="WEEK 2 Achmt" placeholder="E.g., 1900" class="week-field" data-week="2">
                 </div>
             </div>
 
             <div class="grid-row">
                 <div class="form-group">
                     <label for="week3Target">WEEK 3 Target:</label>
-                    <input type="number" id="week3Target" name="WEEK 3 Target" placeholder="E.g., 2000">
+                    <input type="number" id="week3Target" name="WEEK 3 Target" placeholder="E.g., 2000" class="week-field" data-week="3">
                 </div>
                 <div class="form-group">
                     <label for="week3Achmt">WEEK 3 Achmt:</label>
-                    <input type="number" id="week3Achmt" name="WEEK 3 Achmt" placeholder="E.g., 2100">
+                    <input type="number" id="week3Achmt" name="WEEK 3 Achmt" placeholder="E.g., 2100" class="week-field" data-week="3">
                 </div>
             </div>
 
             <div class="grid-row">
                 <div class="form-group">
                     <label for="week4Target">WEEK 4 Target:</label>
-                    <input type="number" id="week4Target" name="WEEK 4 Target" placeholder="E.g., 2000">
+                    <input type="number" id="week4Target" name="WEEK 4 Target" placeholder="E.g., 2000" class="week-field" data-week="4">
                 </div>
                 <div class="form-group">
                     <label for="week4Achmt">WEEK 4 Achmt:</label>
-                    <input type="number" id="week4Achmt" name="WEEK 4 Achmt" placeholder="E.g., 2100">
+                    <input type="number" id="week4Achmt" name="WEEK 4 Achmt" placeholder="E.g., 2100" class="week-field" data-week="4">
                 </div>
             </div>
 
@@ -260,78 +270,166 @@
     </div>
 
     <script>
-        // Get references to HTML elements
-        const form = document.getElementById('performanceForm'); // Form needs this ID!
+        const form = document.getElementById('performanceForm');
         const formTitle = document.getElementById('formTitle');
         const successMessage = document.getElementById('formSuccessMessage');
         const errorMessage = document.getElementById('formErrorMessage');
+        const weekFields = document.querySelectorAll('.week-field'); // Get all week-related fields
 
         // IMPORTANT: Replace this with your Google Apps Script Web App URL
         const appsScriptURL = 'https://script.google.com/macros/s/AKfycbxnNMtVjeHh4M87Pn61_jxzcs902win5sToqQQDRR6_RFKckZOsk9zZlDbGD2juW7NC/exec';
 
-        // Add event listener for form submission
-        form.addEventListener('submit', async function(event) {
-            event.preventDefault(); // PREVENT THE DEFAULT BROWSER SUBMISSION (page reload)
+        // --- NEW LOGIC: ADMIN OVERRIDE AND WEEK DETECTION ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const isAdmin = urlParams.get('admin') === 'true'; // Check for ?admin=true in URL
 
-            // Hide any previous messages
+        /**
+         * Determines the Nth Monday-Saturday week of the current month that a given date falls into.
+         * Returns 1, 2, 3, or 4 if the date is within one of the first four full Mon-Sat periods of the month.
+         * Returns 0 if the date is a Sunday or falls outside these defined 4 weeks (e.g., in a partial week
+         * at the start/end of the month that doesn't align with Week 1-4, or beyond Week 4).
+         * @param {Date} date The date to check.
+         * @returns {number} The week number (1-4) or 0.
+         */
+        function getWeekNumberOfMonth(date) {
+            const d = new Date(date);
+            d.setHours(0, 0, 0, 0); // Normalize to start of day (important for comparisons)
+
+            const year = d.getFullYear();
+            const month = d.getMonth(); // 0-indexed month
+
+            // If current day is Sunday (0), it's outside our Mon-Sat range for week numbering.
+            if (d.getDay() === 0) {
+                return 0;
+            }
+
+            let weekNumber = 0;
+            // Start checking from the 1st of the month to find the first Monday
+            let tempDate = new Date(year, month, 1);
+
+            // Find the first Monday of the current month.
+            // If the 1st of the month isn't a Monday, this loop advances to the first Monday *in* that month.
+            while (tempDate.getDay() !== 1) { // 1 = Monday
+                tempDate.setDate(tempDate.getDate() + 1);
+                // If we cross into the next month before finding a Monday, it means this month has no Mon-Sat weeks starting on or after the 1st.
+                if (tempDate.getMonth() !== month) {
+                    return 0; // No valid Mon-Sat weeks to track in this month from the 1st
+                }
+            }
+
+            // Now, 'tempDate' holds the date of the first Monday of the current month.
+            // Iterate through the first 4 potential Monday-Saturday weeks.
+            for (let i = 1; i <= 4; i++) {
+                const weekStart = new Date(tempDate); // This Monday
+                const weekEnd = new Date(tempDate);
+                weekEnd.setDate(weekEnd.getDate() + 5); // This Saturday
+
+                // Check if the current date 'd' falls within this Monday-Saturday range
+                // (Inclusive of Monday and Saturday)
+                if (d.getTime() >= weekStart.getTime() && d.getTime() <= weekEnd.getTime()) {
+                    weekNumber = i; // Found the active week!
+                    break; // Exit the loop, no need to check further weeks
+                }
+
+                // Move 'tempDate' to the Monday of the next week for the next iteration
+                tempDate.setDate(tempDate.getDate() + 7);
+                // If we cross into the next month, it means there are no more full Mon-Sat weeks in the current month
+                if (tempDate.getMonth() !== month) {
+                    break;
+                }
+            }
+            return weekNumber; // Returns 1, 2, 3, 4, or 0 if not within a defined week
+        }
+
+
+        // Initialize form fields based on current week or admin mode
+        function initializeFormFields() {
+            if (isAdmin) {
+                // If admin, all fields remain enabled by default. No action needed here.
+                console.log("Admin mode: All week fields are enabled.");
+                weekFields.forEach(field => {
+                    field.disabled = false; // Ensure they are not disabled from a previous state
+                    field.parentElement.style.opacity = '1';
+                });
+                return;
+            }
+
+            const currentWeek = getWeekNumberOfMonth(new Date()); // Get the current week number
+            console.log("Current detected week of month (Mon-Sat):", currentWeek); // For debugging in console
+
+            weekFields.forEach(field => {
+                const fieldWeek = parseInt(field.dataset.week); // Get the week number from data-week attribute
+                if (fieldWeek === currentWeek) {
+                    field.disabled = false; // Enable fields for the current week
+                    field.parentElement.style.opacity = '1'; // Make it visually clear it's active
+                } else {
+                    field.disabled = true; // Disable fields for other weeks
+                    field.value = ''; // Clear the value of disabled fields
+                    field.parentElement.style.opacity = '0.5'; // Make it visually dimmed
+                }
+            });
+        }
+
+        // Call the initialization function when the page loads
+        document.addEventListener('DOMContentLoaded', initializeFormFields);
+
+        // --- END NEW LOGIC ---
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
             successMessage.style.display = 'none';
             errorMessage.style.display = 'none';
 
-            // Disable submit button to prevent multiple submissions
             const submitButton = form.querySelector('button[type="submit"]');
             submitButton.disabled = true;
-            submitButton.textContent = 'Submitting...'; // Provide user feedback
+            submitButton.textContent = 'Submitting...';
 
-            const formData = new FormData(form); // Collect all form data
+            const formData = new FormData(form);
 
             try {
-                // Send data using fetch API (AJAX)
                 const response = await fetch(appsScriptURL, {
                     method: 'POST',
                     body: formData,
                 });
 
-                if (response.ok) { // Check if the HTTP status code is 2xx (success)
-                    const resultText = await response.text(); // Read the text response from Apps Script
-                    console.log("Apps Script response text:", resultText); // Log response for debugging
+                if (response.ok) {
+                    const resultText = await response.text();
+                    console.log("Apps Script response text:", resultText);
 
-                    // Check if Apps Script returned the exact "Success" text
                     if (resultText.trim() === 'Success') {
-                        form.style.display = 'none'; // Hide the form
-                        formTitle.style.display = 'none'; // Hide the title
-                        successMessage.style.display = 'block'; // Show success message
+                        form.style.display = 'none';
+                        formTitle.style.display = 'none';
+                        successMessage.style.display = 'block';
                         form.reset(); // Clear the form fields for next submission
+                        initializeFormFields(); // IMPORTANT: Re-initialize fields after resetting the form
                     } else {
-                        // Apps Script returned something unexpected
                         console.error("Apps Script returned unexpected text:", resultText);
                         errorMessage.querySelector('p').textContent = `Submission failed: Unexpected response from server.`;
                         errorMessage.style.display = 'block';
                     }
                 } else {
-                    // HTTP error (e.g., 404, 500 from Apps Script)
                     console.error("HTTP Error during submission:", response.status, response.statusText);
                     errorMessage.querySelector('p').textContent = `Server error: ${response.status} ${response.statusText}. Please try again.`;
                     errorMessage.style.display = 'block';
                 }
             } catch (error) {
-                // Network error or other fetch issues (e.g., no internet)
                 console.error('Error submitting form:', error);
                 errorMessage.querySelector('p').textContent = `Network error: ${error.message}. Please check your connection.`;
                 errorMessage.style.display = 'block';
             } finally {
-                // Re-enable button regardless of success or failure
                 submitButton.disabled = false;
                 submitButton.textContent = 'Submit Performance Data';
             }
         });
 
-        // Function to reset the form and show it again
         function resetForm() {
             successMessage.style.display = 'none';
             errorMessage.style.display = 'none';
-            formTitle.style.display = 'block'; // Show title again
-            form.style.display = 'block'; // Show the form again
+            formTitle.style.display = 'block';
+            form.style.display = 'block';
             form.reset(); // Reset form fields
+            initializeFormFields(); // IMPORTANT: Re-initialize fields after reset
         }
     </script>
 </body>
