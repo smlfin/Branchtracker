@@ -62,6 +62,23 @@
             margin-bottom: 0;
         }
 
+        /* Style for field sections */
+        .category-section {
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 25px;
+            background-color: #f9f9f9;
+        }
+        .category-section h2 {
+            margin-top: 0;
+            color: #007bff;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+
         @media (max-width: 768px) {
             .grid-row {
                 grid-template-columns: 1fr;
@@ -123,14 +140,18 @@
             background-color: #0056b3;
         }
 
-        /* NEW: Style for disabled fields */
+        /* Style for disabled fields */
         input:disabled, select:disabled {
             background-color: #e9ecef; /* Lighter background */
             cursor: not-allowed;
             opacity: 0.7; /* Slightly dimmed */
         }
-        .form-group.disabled-week { /* Optional: style the whole group */
+        .form-group.disabled-field-group { /* Optional: style the whole group visually */
             opacity: 0.6;
+            pointer-events: none; /* Prevents interaction with child elements */
+        }
+        .form-group.disabled-field-group label {
+            color: #999;
         }
     </style>
 </head>
@@ -175,80 +196,300 @@
                 <input type="text" id="employeeName" name="Employee name" placeholder="E.g., John Doe" required>
             </div>
 
-            <div class="grid-row">
-                <div class="form-group">
-                    <label for="fyTarget">FY Target:</label>
-                    <input type="number" id="fyTarget" name="FY Target" placeholder="E.g., 100000" required>
+            <div class="form-group">
+                <label for="userRole">Your Role:</label>
+                <select id="userRole" name="User Role" required>
+                    <option value="">Select Role</option>
+                    <option value="Branch in Charge">Branch in Charge</option>
+                    <option value="Others">Others</option>
+                </select>
+            </div>
+
+            <div class="category-section" id="outstanding-section">
+                <h2>Outstanding</h2>
+                <div class="grid-row outstanding-period-group" data-category="Outstanding" data-period="FY">
+                    <div class="form-group">
+                        <label for="outstandingFyTarget">FY Target:</label>
+                        <input type="number" id="outstandingFyTarget" name="Outstanding FY Target" placeholder="Target" class="outstanding-field">
+                    </div>
+                    <div class="form-group">
+                        <label for="outstandingFyAchmt">FY Achmt:</label>
+                        <input type="number" id="outstandingFyAchmt" name="Outstanding FY Achmt" placeholder="Achievement" class="outstanding-field">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="fyAchmt">FY Achmt:</label>
-                    <input type="number" id="fyAchmt" name="FY Achmt" placeholder="E.g., 95000" required>
+                <div class="grid-row outstanding-period-group" data-category="Outstanding" data-period="Quarter">
+                    <div class="form-group">
+                        <label for="outstandingQuarterTarget">Quarter Target:</label>
+                        <input type="number" id="outstandingQuarterTarget" name="Outstanding Quarter Target" placeholder="Target" class="outstanding-field quarter-field">
+                    </div>
+                    <div class="form-group">
+                        <label for="outstandingQuarterAchmt">Quarter Achmt:</label>
+                        <input type="number" id="outstandingQuarterAchmt" name="Outstanding Quarter Achmt" placeholder="Achievement" class="outstanding-field quarter-field">
+                    </div>
+                </div>
+                <div class="grid-row outstanding-period-group" data-category="Outstanding" data-period="Month">
+                    <div class="form-group">
+                        <label for="outstandingMonthTarget">Month Target:</label>
+                        <input type="number" id="outstandingMonthTarget" name="Outstanding Month Target" placeholder="Target" class="outstanding-field month-field">
+                    </div>
+                    <div class="form-group">
+                        <label for="outstandingMonthAchmt">Month Achmt:</label>
+                        <input type="number" id="outstandingMonthAchmt" name="Outstanding Month Achmt" placeholder="Achievement" class="outstanding-field month-field">
+                    </div>
                 </div>
             </div>
 
-            <div class="grid-row">
-                <div class="form-group">
-                    <label for="quarterTarget">Quarter Target:</label>
-                    <input type="number" id="quarterTarget" name="Quarter Target" placeholder="E.g., 25000" required>
+            <div class="category-section">
+                <h2>Net Growth Target</h2>
+                <div class="grid-row net-growth-period-group" data-category="Net Growth" data-period="FY">
+                    <div class="form-group">
+                        <label for="netGrowthFyTarget">FY Target:</label>
+                        <input type="number" id="netGrowthFyTarget" name="Net Growth FY Target" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="netGrowthFyAchmt">FY Achmt:</label>
+                        <input type="number" id="netGrowthFyAchmt" name="Net Growth FY Achmt" placeholder="Achievement">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="quarterAchmt">Quarter Achievement:</label>
-                    <input type="number" id="quarterAchmt" name="Quarter Achievement" placeholder="E.g., 23000" required>
+                <div class="grid-row net-growth-period-group" data-category="Net Growth" data-period="Quarter">
+                    <div class="form-group">
+                        <label for="netGrowthQuarterTarget">Quarter Target:</label>
+                        <input type="number" id="netGrowthQuarterTarget" name="Net Growth Quarter Target" placeholder="Target" class="quarter-field">
+                    </div>
+                    <div class="form-group">
+                        <label for="netGrowthQuarterAchmt">Quarter Achmt:</label>
+                        <input type="number" id="netGrowthQuarterAchmt" name="Net Growth Quarter Achmt" placeholder="Achievement" class="quarter-field">
+                    </div>
+                </div>
+                <div class="grid-row net-growth-period-group" data-category="Net Growth" data-period="Month">
+                    <div class="form-group">
+                        <label for="netGrowthMonthTarget">Month Target:</label>
+                        <input type="number" id="netGrowthMonthTarget" name="Net Growth Month Target" placeholder="Target" class="month-field">
+                    </div>
+                    <div class="form-group">
+                        <label for="netGrowthMonthAchmt">Month Achmt:</label>
+                        <input type="number" id="netGrowthMonthAchmt" name="Net Growth Month Achmt" placeholder="Achievement" class="month-field">
+                    </div>
+                </div>
+                <div class="grid-row net-growth-period-group" data-category="Net Growth" data-period="Week" data-week="1">
+                    <div class="form-group">
+                        <label for="netGrowthWeek1Target">WEEK 1 Target:</label>
+                        <input type="number" id="netGrowthWeek1Target" name="Net Growth WEEK 1 Target" placeholder="Target" class="week-field" data-week="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="netGrowthWeek1Achmt">WEEK 1 Achmt:</label>
+                        <input type="number" id="netGrowthWeek1Achmt" name="Net Growth WEEK 1 Achmt" placeholder="Achievement" class="week-field" data-week="1">
+                    </div>
+                </div>
+                <div class="grid-row net-growth-period-group" data-category="Net Growth" data-period="Week" data-week="2">
+                    <div class="form-group">
+                        <label for="netGrowthWeek2Target">WEEK 2 Target:</label>
+                        <input type="number" id="netGrowthWeek2Target" name="Net Growth WEEK 2 Target" placeholder="Target" class="week-field" data-week="2">
+                    </div>
+                    <div class="form-group">
+                        <label for="netGrowthWeek2Achmt">WEEK 2 Achmt:</label>
+                        <input type="number" id="netGrowthWeek2Achmt" name="Net Growth WEEK 2 Achmt" placeholder="Achievement" class="week-field" data-week="2">
+                    </div>
+                </div>
+                <div class="grid-row net-growth-period-group" data-category="Net Growth" data-period="Week" data-week="3">
+                    <div class="form-group">
+                        <label for="netGrowthWeek3Target">WEEK 3 Target:</label>
+                        <input type="number" id="netGrowthWeek3Target" name="Net Growth WEEK 3 Target" placeholder="Target" class="week-field" data-week="3">
+                    </div>
+                    <div class="form-group">
+                        <label for="netGrowthWeek3Achmt">WEEK 3 Achmt:</label>
+                        <input type="number" id="netGrowthWeek3Achmt" name="Net Growth WEEK 3 Achmt" placeholder="Achievement" class="week-field" data-week="3">
+                    </div>
+                </div>
+                <div class="grid-row net-growth-period-group" data-category="Net Growth" data-period="Week" data-week="4">
+                    <div class="form-group">
+                        <label for="netGrowthWeek4Target">WEEK 4 Target:</label>
+                        <input type="number" id="netGrowthWeek4Target" name="Net Growth WEEK 4 Target" placeholder="Target" class="week-field" data-week="4">
+                    </div>
+                    <div class="form-group">
+                        <label for="netGrowthWeek4Achmt">WEEK 4 Achmt:</label>
+                        <input type="number" id="netGrowthWeek4Achmt" name="Net Growth WEEK 4 Achmt" placeholder="Achievement" class="week-field" data-week="4">
+                    </div>
                 </div>
             </div>
 
-            <div class="grid-row">
-                <div class="form-group">
-                    <label for="monthTarget">Month Target:</label>
-                    <input type="number" id="monthTarget" name="Month Target" placeholder="E.g., 8000" required>
+            <div class="category-section">
+                <h2>Fresh Customer</h2>
+                <div class="grid-row fresh-customer-period-group" data-category="Fresh Customer" data-period="Quarter">
+                    <div class="form-group">
+                        <label for="freshCustomerQuarterTarget">Quarter Target:</label>
+                        <input type="number" id="freshCustomerQuarterTarget" name="Fresh Customer Quarter Target" placeholder="Target" class="quarter-field">
+                    </div>
+                    <div class="form-group">
+                        <label for="freshCustomerQuarterAchmt">Quarter Achmt:</label>
+                        <input type="number" id="freshCustomerQuarterAchmt" name="Fresh Customer Quarter Achmt" placeholder="Achievement" class="quarter-field">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="monthAchmt">Month Achievement:</label>
-                    <input type="number" id="monthAchmt" name="Month Achievement" placeholder="E.g., 7500" required>
+                <div class="grid-row fresh-customer-period-group" data-category="Fresh Customer" data-period="Month">
+                    <div class="form-group">
+                        <label for="freshCustomerMonthTarget">Month Target:</label>
+                        <input type="number" id="freshCustomerMonthTarget" name="Fresh Customer Month Target" placeholder="Target" class="month-field">
+                    </div>
+                    <div class="form-group">
+                        <label for="freshCustomerMonthAchmt">Month Achmt:</label>
+                        <input type="number" id="freshCustomerMonthAchmt" name="Fresh Customer Month Achmt" placeholder="Achievement" class="month-field">
+                    </div>
+                </div>
+                <div class="grid-row fresh-customer-period-group" data-category="Fresh Customer" data-period="Week" data-week="1">
+                    <div class="form-group">
+                        <label for="freshCustomerWeek1Target">WEEK 1 Target:</label>
+                        <input type="number" id="freshCustomerWeek1Target" name="Fresh Customer WEEK 1 Target" placeholder="Target" class="week-field" data-week="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="freshCustomerWeek1Achmt">WEEK 1 Achmt:</label>
+                        <input type="number" id="freshCustomerWeek1Achmt" name="Fresh Customer WEEK 1 Achmt" placeholder="Achievement" class="week-field" data-week="1">
+                    </div>
+                </div>
+                <div class="grid-row fresh-customer-period-group" data-category="Fresh Customer" data-period="Week" data-week="2">
+                    <div class="form-group">
+                        <label for="freshCustomerWeek2Target">WEEK 2 Target:</label>
+                        <input type="number" id="freshCustomerWeek2Target" name="Fresh Customer WEEK 2 Target" placeholder="Target" class="week-field" data-week="2">
+                    </div>
+                    <div class="form-group">
+                        <label for="freshCustomerWeek2Achmt">WEEK 2 Achmt:</label>
+                        <input type="number" id="freshCustomerWeek2Achmt" name="Fresh Customer WEEK 2 Achmt" placeholder="Achievement" class="week-field" data-week="2">
+                    </div>
+                </div>
+                <div class="grid-row fresh-customer-period-group" data-category="Fresh Customer" data-period="Week" data-week="3">
+                    <div class="form-group">
+                        <label for="freshCustomerWeek3Target">WEEK 3 Target:</label>
+                        <input type="number" id="freshCustomerWeek3Target" name="Fresh Customer WEEK 3 Target" placeholder="Target" class="week-field" data-week="3">
+                    </div>
+                    <div class="form-group">
+                        <label for="freshCustomerWeek3Achmt">WEEK 3 Achmt:</label>
+                        <input type="number" id="freshCustomerWeek3Achmt" name="Fresh Customer WEEK 3 Achmt" placeholder="Achievement" class="week-field" data-week="3">
+                    </div>
+                </div>
+                <div class="grid-row fresh-customer-period-group" data-category="Fresh Customer" data-period="Week" data-week="4">
+                    <div class="form-group">
+                        <label for="freshCustomerWeek4Target">WEEK 4 Target:</label>
+                        <input type="number" id="freshCustomerWeek4Target" name="Fresh Customer WEEK 4 Target" placeholder="Target" class="week-field" data-week="4">
+                    </div>
+                    <div class="form-group">
+                        <label for="freshCustomerWeek4Achmt">WEEK 4 Achmt:</label>
+                        <input type="number" id="freshCustomerWeek4Achmt" name="Fresh Customer WEEK 4 Achmt" placeholder="Achievement" class="week-field" data-week="4">
+                    </div>
                 </div>
             </div>
 
-            <div class="grid-row">
+            <div class="category-section">
+                <h2>Actual Customer Base</h2>
                 <div class="form-group">
-                    <label for="week1Target">WEEK 1 Target:</label>
-                    <input type="number" id="week1Target" name="WEEK 1 Target" placeholder="E.g., 2000" class="week-field" data-week="1">
-                </div>
-                <div class="form-group">
-                    <label for="week1Achmt">WEEK 1 Achmt:</label>
-                    <input type="number" id="week1Achmt" name="WEEK 1 Achmt" placeholder="E.g., 1800" class="week-field" data-week="1">
+                    <label for="actualCustomerBase">Actual Customer Base Number:</label>
+                    <input type="number" id="actualCustomerBase" name="Actual Customer Base" placeholder="Number of Customers">
                 </div>
             </div>
 
-            <div class="grid-row">
-                <div class="form-group">
-                    <label for="week2Target">WEEK 2 Target:</label>
-                    <input type="number" id="week2Target" name="WEEK 2 Target" placeholder="E.g., 2000" class="week-field" data-week="2">
+            <div class="category-section">
+                <h2>Visits</h2>
+                <div class="grid-row visits-period-group" data-category="Visits" data-period="Month">
+                    <div class="form-group">
+                        <label for="visitsMonthTarget">Month Target:</label>
+                        <input type="number" id="visitsMonthTarget" name="Visits Month Target" placeholder="Target" class="month-field">
+                    </div>
+                    <div class="form-group">
+                        <label for="visitsMonthAchmt">Month Achmt:</label>
+                        <input type="number" id="visitsMonthAchmt" name="Visits Month Achmt" placeholder="Achievement" class="month-field">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="week2Achmt">WEEK 2 Achmt:</label>
-                    <input type="number" id="week2Achmt" name="WEEK 2 Achmt" placeholder="E.g., 1900" class="week-field" data-week="2">
+                <div class="grid-row visits-period-group" data-category="Visits" data-period="Week" data-week="1">
+                    <div class="form-group">
+                        <label for="visitsWeek1Target">WEEK 1 Target:</label>
+                        <input type="number" id="visitsWeek1Target" name="Visits WEEK 1 Target" placeholder="Target" class="week-field" data-week="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="visitsWeek1Achmt">WEEK 1 Achmt:</label>
+                        <input type="number" id="visitsWeek1Achmt" name="Visits WEEK 1 Achmt" placeholder="Achievement" class="week-field" data-week="1">
+                    </div>
+                </div>
+                <div class="grid-row visits-period-group" data-category="Visits" data-period="Week" data-week="2">
+                    <div class="form-group">
+                        <label for="visitsWeek2Target">WEEK 2 Target:</label>
+                        <input type="number" id="visitsWeek2Target" name="Visits WEEK 2 Target" placeholder="Target" class="week-field" data-week="2">
+                    </div>
+                    <div class="form-group">
+                        <label for="visitsWeek2Achmt">WEEK 2 Achmt:</label>
+                        <input type="number" id="visitsWeek2Achmt" name="Visits WEEK 2 Achmt" placeholder="Achievement" class="week-field" data-week="2">
+                    </div>
+                </div>
+                <div class="grid-row visits-period-group" data-category="Visits" data-period="Week" data-week="3">
+                    <div class="form-group">
+                        <label for="visitsWeek3Target">WEEK 3 Target:</label>
+                        <input type="number" id="visitsWeek3Target" name="Visits WEEK 3 Target" placeholder="Target" class="week-field" data-week="3">
+                    </div>
+                    <div class="form-group">
+                        <label for="visitsWeek3Achmt">WEEK 3 Achmt:</label>
+                        <input type="number" id="visitsWeek3Achmt" name="Visits WEEK 3 Achmt" placeholder="Achievement" class="week-field" data-week="3">
+                    </div>
+                </div>
+                <div class="grid-row visits-period-group" data-category="Visits" data-period="Week" data-week="4">
+                    <div class="form-group">
+                        <label for="visitsWeek4Target">WEEK 4 Target:</label>
+                        <input type="number" id="visitsWeek4Target" name="Visits WEEK 4 Target" placeholder="Target" class="week-field" data-week="4">
+                    </div>
+                    <div class="form-group">
+                        <label for="visitsWeek4Achmt">WEEK 4 Achmt:</label>
+                        <input type="number" id="visitsWeek4Achmt" name="Visits WEEK 4 Achmt" placeholder="Achievement" class="week-field" data-week="4">
+                    </div>
                 </div>
             </div>
 
-            <div class="grid-row">
-                <div class="form-group">
-                    <label for="week3Target">WEEK 3 Target:</label>
-                    <input type="number" id="week3Target" name="WEEK 3 Target" placeholder="E.g., 2000" class="week-field" data-week="3">
+            <div class="category-section">
+                <h2>Calls</h2>
+                <div class="grid-row calls-period-group" data-category="Calls" data-period="Month">
+                    <div class="form-group">
+                        <label for="callsMonthTarget">Month Target:</label>
+                        <input type="number" id="callsMonthTarget" name="Calls Month Target" placeholder="Target" class="month-field">
+                    </div>
+                    <div class="form-group">
+                        <label for="callsMonthAchmt">Month Achmt:</label>
+                        <input type="number" id="callsMonthAchmt" name="Calls Month Achmt" placeholder="Achievement" class="month-field">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="week3Achmt">WEEK 3 Achmt:</label>
-                    <input type="number" id="week3Achmt" name="WEEK 3 Achmt" placeholder="E.g., 2100" class="week-field" data-week="3">
+                <div class="grid-row calls-period-group" data-category="Calls" data-period="Week" data-week="1">
+                    <div class="form-group">
+                        <label for="callsWeek1Target">WEEK 1 Target:</label>
+                        <input type="number" id="callsWeek1Target" name="Calls WEEK 1 Target" placeholder="Target" class="week-field" data-week="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="callsWeek1Achmt">WEEK 1 Achmt:</label>
+                        <input type="number" id="callsWeek1Achmt" name="Calls WEEK 1 Achmt" placeholder="Achievement" class="week-field" data-week="1">
+                    </div>
                 </div>
-            </div>
-
-            <div class="grid-row">
-                <div class="form-group">
-                    <label for="week4Target">WEEK 4 Target:</label>
-                    <input type="number" id="week4Target" name="WEEK 4 Target" placeholder="E.g., 2000" class="week-field" data-week="4">
+                <div class="grid-row calls-period-group" data-category="Calls" data-period="Week" data-week="2">
+                    <div class="form-group">
+                        <label for="callsWeek2Target">WEEK 2 Target:</label>
+                        <input type="number" id="callsWeek2Target" name="Calls WEEK 2 Target" placeholder="Target" class="week-field" data-week="2">
+                    </div>
+                    <div class="form-group">
+                        <label for="callsWeek2Achmt">WEEK 2 Achmt:</label>
+                        <input type="number" id="callsWeek2Achmt" name="Calls WEEK 2 Achmt" placeholder="Achievement" class="week-field" data-week="2">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="week4Achmt">WEEK 4 Achmt:</label>
-                    <input type="number" id="week4Achmt" name="WEEK 4 Achmt" placeholder="E.g., 2100" class="week-field" data-week="4">
+                <div class="grid-row calls-period-group" data-category="Calls" data-period="Week" data-week="3">
+                    <div class="form-group">
+                        <label for="callsWeek3Target">WEEK 3 Target:</label>
+                        <input type="number" id="callsWeek3Target" name="Calls WEEK 3 Target" placeholder="Target" class="week-field" data-week="3">
+                    </div>
+                    <div class="form-group">
+                        <label for="callsWeek3Achmt">WEEK 3 Achmt:</label>
+                        <input type="number" id="callsWeek3Achmt" name="Calls WEEK 3 Achmt" placeholder="Achievement" class="week-field" data-week="3">
+                    </div>
+                </div>
+                <div class="grid-row calls-period-group" data-category="Calls" data-period="Week" data-week="4">
+                    <div class="form-group">
+                        <label for="callsWeek4Target">WEEK 4 Target:</label>
+                        <input type="number" id="callsWeek4Target" name="Calls WEEK 4 Target" placeholder="Target" class="week-field" data-week="4">
+                    </div>
+                    <div class="form-group">
+                        <label for="callsWeek4Achmt">WEEK 4 Achmt:</label>
+                        <input type="number" id="callsWeek4Achmt" name="Calls WEEK 4 Achmt" placeholder="Achievement" class="week-field" data-week="4">
+                    </div>
                 </div>
             </div>
 
@@ -270,110 +511,102 @@
     </div>
 
     <script>
+        // Placeholder for new JavaScript logic - will be fully updated in the next step
         const form = document.getElementById('performanceForm');
         const formTitle = document.getElementById('formTitle');
         const successMessage = document.getElementById('formSuccessMessage');
         const errorMessage = document.getElementById('formErrorMessage');
-        const weekFields = document.querySelectorAll('.week-field'); // Get all week-related fields
+        const userRoleSelect = document.getElementById('userRole'); // New: User Role Select
+        const outstandingFields = document.querySelectorAll('.outstanding-field'); // New: For Outstanding category
+        const weekFields = document.querySelectorAll('.week-field'); // Existing: For weekly fields
+        const quarterFields = document.querySelectorAll('.quarter-field'); // New: For quarterly fields
+        const monthFields = document.querySelectorAll('.month-field'); // New: For monthly fields
 
         // IMPORTANT: Replace this with your Google Apps Script Web App URL
         const appsScriptURL = 'https://script.google.com/macros/s/AKfycbxnNMtVjeHh4M87Pn61_jxzcs902win5sToqQQDRR6_RFKckZOsk9zZlDbGD2juW7NC/exec';
 
-        // --- NEW LOGIC: ADMIN OVERRIDE AND WEEK DETECTION ---
+        // --- NEW LOGIC: ADMIN OVERRIDE AND WEEK DETECTION (Partial) ---
         const urlParams = new URLSearchParams(window.location.search);
         const isAdmin = urlParams.get('admin') === 'true'; // Check for ?admin=true in URL
 
-        /**
-         * Determines the Nth Monday-Saturday week of the current month that a given date falls into.
-         * Returns 1, 2, 3, or 4 if the date is within one of the first four full Mon-Sat periods of the month.
-         * Returns 0 if the date is a Sunday or falls outside these defined 4 weeks (e.g., in a partial week
-         * at the start/end of the month that doesn't align with Week 1-4, or beyond Week 4).
-         * @param {Date} date The date to check.
-         * @returns {number} The week number (1-4) or 0.
-         */
+        // --- Temporarily simplified initializeFormFields to avoid errors before full implementation ---
+        function initializeFormFields() {
+            // For now, just apply the admin logic and existing weekly logic.
+            // Full implementation with data fetching and conditional disabling for Qtr/Month comes next.
+            if (isAdmin) {
+                console.log("Admin mode: All fields are enabled.");
+                // Ensure all relevant fields are enabled if in admin mode
+                document.querySelectorAll('input, select').forEach(field => {
+                    field.disabled = false;
+                    if (field.parentElement.classList.contains('disabled-field-group')) {
+                        field.parentElement.classList.remove('disabled-field-group');
+                    }
+                });
+            } else {
+                // Apply weekly detection only for now
+                const currentWeek = getWeekNumberOfMonth(new Date());
+                weekFields.forEach(field => {
+                    const fieldWeek = parseInt(field.dataset.week);
+                    if (fieldWeek === currentWeek) {
+                        field.disabled = false;
+                        field.parentElement.classList.remove('disabled-field-group');
+                    } else {
+                        field.disabled = true;
+                        field.value = '';
+                        field.parentElement.classList.add('disabled-field-group');
+                    }
+                });
+
+                // Outstanding fields are disabled by default for non-Branch in Charge, handled by event listener
+                // Quarterly/Monthly fields will be handled with fetched data
+            }
+        }
+
+        // --- NEW: Function to determine the Nth Monday-Saturday week of the month a date falls into (re-used) ---
         function getWeekNumberOfMonth(date) {
             const d = new Date(date);
-            d.setHours(0, 0, 0, 0); // Normalize to start of day (important for comparisons)
+            d.setHours(0, 0, 0, 0);
 
             const year = d.getFullYear();
-            const month = d.getMonth(); // 0-indexed month
+            const month = d.getMonth();
 
-            // If current day is Sunday (0), it's outside our Mon-Sat range for week numbering.
-            if (d.getDay() === 0) {
+            if (d.getDay() === 0) { // Sunday
                 return 0;
             }
 
             let weekNumber = 0;
-            // Start checking from the 1st of the month to find the first Monday
             let tempDate = new Date(year, month, 1);
 
-            // Find the first Monday of the current month.
-            // If the 1st of the month isn't a Monday, this loop advances to the first Monday *in* that month.
-            while (tempDate.getDay() !== 1) { // 1 = Monday
+            while (tempDate.getDay() !== 1) { // Find first Monday of the month
                 tempDate.setDate(tempDate.getDate() + 1);
-                // If we cross into the next month before finding a Monday, it means this month has no Mon-Sat weeks starting on or after the 1st.
                 if (tempDate.getMonth() !== month) {
-                    return 0; // No valid Mon-Sat weeks to track in this month from the 1st
+                    return 0;
                 }
             }
 
-            // Now, 'tempDate' holds the date of the first Monday of the current month.
-            // Iterate through the first 4 potential Monday-Saturday weeks.
             for (let i = 1; i <= 4; i++) {
-                const weekStart = new Date(tempDate); // This Monday
+                const weekStart = new Date(tempDate);
                 const weekEnd = new Date(tempDate);
-                weekEnd.setDate(weekEnd.getDate() + 5); // This Saturday
+                weekEnd.setDate(weekEnd.getDate() + 5); // Saturday
 
-                // Check if the current date 'd' falls within this Monday-Saturday range
-                // (Inclusive of Monday and Saturday)
                 if (d.getTime() >= weekStart.getTime() && d.getTime() <= weekEnd.getTime()) {
-                    weekNumber = i; // Found the active week!
-                    break; // Exit the loop, no need to check further weeks
+                    weekNumber = i;
+                    break;
                 }
-
-                // Move 'tempDate' to the Monday of the next week for the next iteration
                 tempDate.setDate(tempDate.getDate() + 7);
-                // If we cross into the next month, it means there are no more full Mon-Sat weeks in the current month
                 if (tempDate.getMonth() !== month) {
                     break;
                 }
             }
-            return weekNumber; // Returns 1, 2, 3, 4, or 0 if not within a defined week
+            return weekNumber;
         }
 
 
-        // Initialize form fields based on current week or admin mode
-        function initializeFormFields() {
-            if (isAdmin) {
-                // If admin, all fields remain enabled by default. No action needed here.
-                console.log("Admin mode: All week fields are enabled.");
-                weekFields.forEach(field => {
-                    field.disabled = false; // Ensure they are not disabled from a previous state
-                    field.parentElement.style.opacity = '1';
-                });
-                return;
-            }
+        // NEW: Event listener for User Role to control Outstanding fields
+        userRoleSelect.addEventListener('change', initializeFormFields);
 
-            const currentWeek = getWeekNumberOfMonth(new Date()); // Get the current week number
-            console.log("Current detected week of month (Mon-Sat):", currentWeek); // For debugging in console
 
-            weekFields.forEach(field => {
-                const fieldWeek = parseInt(field.dataset.week); // Get the week number from data-week attribute
-                if (fieldWeek === currentWeek) {
-                    field.disabled = false; // Enable fields for the current week
-                    field.parentElement.style.opacity = '1'; // Make it visually clear it's active
-                } else {
-                    field.disabled = true; // Disable fields for other weeks
-                    field.value = ''; // Clear the value of disabled fields
-                    field.parentElement.style.opacity = '0.5'; // Make it visually dimmed
-                }
-            });
-        }
-
-        // Call the initialization function when the page loads
         document.addEventListener('DOMContentLoaded', initializeFormFields);
-
-        // --- END NEW LOGIC ---
 
         form.addEventListener('submit', async function(event) {
             event.preventDefault();
@@ -387,10 +620,21 @@
 
             const formData = new FormData(form);
 
+            // Important: only submit enabled fields to avoid sending old disabled values
+            const dataToSend = {};
+            for (let [key, value] of formData.entries()) {
+                const inputElement = form.elements[key];
+                if (inputElement && !inputElement.disabled) {
+                    dataToSend[key] = value;
+                }
+            }
+
             try {
                 const response = await fetch(appsScriptURL, {
                     method: 'POST',
-                    body: formData,
+                    // Use a plain object for body with JSON.stringify if only enabled fields are sent
+                    // or recreate FormData with only enabled fields
+                    body: new URLSearchParams(dataToSend), // Send as URL-encoded form data
                 });
 
                 if (response.ok) {
@@ -401,8 +645,8 @@
                         form.style.display = 'none';
                         formTitle.style.display = 'none';
                         successMessage.style.display = 'block';
-                        form.reset(); // Clear the form fields for next submission
-                        initializeFormFields(); // IMPORTANT: Re-initialize fields after resetting the form
+                        form.reset(); // Clear form values
+                        // No need to re-initialize here, resetForm will handle it
                     } else {
                         console.error("Apps Script returned unexpected text:", resultText);
                         errorMessage.querySelector('p').textContent = `Submission failed: Unexpected response from server.`;
@@ -428,8 +672,8 @@
             errorMessage.style.display = 'none';
             formTitle.style.display = 'block';
             form.style.display = 'block';
-            form.reset(); // Reset form fields
-            initializeFormFields(); // IMPORTANT: Re-initialize fields after reset
+            form.reset(); // Reset all form fields
+            initializeFormFields(); // IMPORTANT: Re-apply disabling/enabling logic and re-fetch data
         }
     </script>
 </body>
