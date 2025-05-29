@@ -1,68 +1,78 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const myForm = document.getElementById('myForm');
-    const submitButton = document.getElementById('submitButton');
-    const statusMessage = document.getElementById('statusMessage');
-    const errorMessage = document.getElementById('errorMessage');
+// --- IMPORTANT: CONFIGURE THESE TWO VARIABLES ---
+const SHEET_ID = '1PBjD9j6pb_jKoYGezZyPiGgz9ddCbe6avkhTKsuZa4A'; // Your Google Sheet ID
+const SHEET_TAB_NAME = 'Branch Data'; // Your Sheet Tab Name
+// --- END CONFIGURATION ---
 
-    // Ensure all input fields are enabled on page load.
-    // This explicitly undoes any potential 'disabled' state from previous logic.
-    const formInputs = myForm.querySelectorAll('input, select, textarea');
-    formInputs.forEach(input => {
-        input.disabled = false;
-        // If you had any parent divs set to display:none for these fields,
-        // you would typically remove that directly in your index.html.
-        // This JS line is a fallback if needed:
-        // if (input.parentElement && input.parentElement.style.display === 'none') {
-        //     input.parentElement.style.display = ''; // or 'block'
-        // }
-    });
+/**
+ * Handles GET requests to serve the web app's HTML page.
+ * This is the standard function for serving an HTML UI.
+ * ALL previous logic for fetching 'latestValues' and 'capturedPeriods' is removed from here.
+ */
+function doGet() {
+  return HtmlService.createTemplateFromFile('index').evaluate()
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
 
-    myForm.addEventListener('submit', function(e) {
-        e.preventDefault(); // Prevent default form submission
+/**
+ * Handles form submissions to append data to the Google Sheet.
+ * This function is called by the client-side JavaScript via google.script.run.processForm(data).
+ * It will return a success/failure message to the client.
+ */
+function processForm(data) {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName(SHEET_TAB_NAME);
 
-        // Show spinner and disable button during submission
-        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
-        submitButton.disabled = true;
-        statusMessage.style.display = 'none'; // Hide any previous status messages
-        errorMessage.style.display = 'none'; // Hide any previous error messages
+  if (!sheet) {
+    Logger.log(`Error: Sheet tab '${SHEET_TAB_NAME}' not found.`);
+    return { success: false, message: `ERROR: Sheet tab '${SHEET_TAB_NAME}' not found. Please check 'SHEET_TAB_NAME' in Code.gs.` };
+  }
 
-        const formData = new FormData(this);
-        const data = {};
-        for (let [key, value] of formData.entries()) {
-            data[key] = value;
-        }
+  // Get current headers from the sheet to ensure data is inserted into correct columns
+  const currentHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const newRow = [];
 
-        google.script.run
-            .withSuccessHandler(function(response) {
-                submitButton.innerHTML = 'Submit';
-                submitButton.disabled = false;
-                if (response.success) {
-                    document.getElementById('myForm').reset(); // Clear the form on successful submission
-                    statusMessage.textContent = response.message;
-                    statusMessage.style.display = 'block';
-                    // Clear the status message after 5 seconds
-                    setTimeout(() => {
-                        statusMessage.style.display = 'none';
-                    }, 5000);
-                } else {
-                    errorMessage.textContent = response.message;
-                    errorMessage.style.display = 'block';
-                    // Clear the error message after 5 seconds
-                    setTimeout(() => {
-                        errorMessage.style.display = 'none';
-                    }, 5000);
-                }
-            })
-            .withFailureHandler(function(error) {
-                submitButton.innerHTML = 'Submit';
-                submitButton.disabled = false;
-                errorMessage.textContent = 'An unexpected error occurred: ' + error.message;
-                errorMessage.style.display = 'block';
-                // Clear the error message after 5 seconds
-                setTimeout(() => {
-                    errorMessage.style.display = 'none';
-                }, 5000);
-            })
-            .processForm(data); // Call the Apps Script function
-    });
-});
+  // Always add Timestamp as the first column for the new row
+  const timestamp = new Date();
+  let timestampAdded = false;
+
+  // Populate newRow based on the sheet's header order
+  // It's highly recommended that your sheet's first column header is 'Timestamp'.
+  for (let i = 0; i < currentHeaders.length; i++) {
+    const header = currentHeaders[i];
+    if (header === 'Timestamp') {
+      newRow.push(timestamp);
+      timestampAdded = true;
+    } else if (data.hasOwnProperty(header)) {
+      let value = data[header];
+      // Attempt to parse numbers, but only if they are not empty and are valid numbers
+      if (value !== '' && !isNaN(parseFloat(value)) && isFinite(value)) {
+          newRow.push(parseFloat(value));
+      } else {
+          newRow.push(value); // Push original string value
+      }
+    } else {
+      newRow.push(''); // Fill columns not present in form data with empty string
+    }
+  }
+
+  // If 'Timestamp' header was not found in the sheet headers, add it at the beginning of the row
+  if (!timestampAdded) {
+      newRow.unshift(timestamp); // Add timestamp to the very start if sheet header didn't specify it
+  }
+
+  try {
+    sheet.appendRow(newRow);
+    return { success: true, message: "Data submitted successfully!" };
+  } catch (e) {
+    Logger.log("Error appending row: " + e.message);
+    return { success: false, message: "Failed to submit data: " + e.message };
+  }
+}
+
+/**
+ * Helper function to include HTML files in templates (e.g., for script.js or style.css)
+ * Required if you are using HtmlService.createTemplateFromFile and embedding JS/CSS.
+ */
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
+}
