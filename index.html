@@ -4,13 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Branch Performance Tracker</title>
-    <link href="style.css" rel="stylesheet"> </head>
+    <style>
+      <?!= include('style'); ?>
+    </style>
+</head>
 <body>
     <div class="container">
         <h1 id="mainTitle">Branchtracker</h1>
         <h2 id="formTitle">Daily/Weekly/Monthly/Quarterly Performance Submission</h2>
 
-        <form id="myForm"> <div class="form-group">
+        <form id="myForm">
+            <div class="form-group">
                 <label for="branch">Branch:</label>
                 <select id="branch" name="Branch" required>
                     <option value="">Select Branch</option>
@@ -50,281 +54,333 @@
                 </select>
             </div>
 
-            <h3>Outstanding</h3>
-            <div class="outstanding-period-group" data-category="Outstanding" data-period="FY">
-                <div class="form-group">
-                    <label for="outstandingFYTarget">FY Target:</label>
-                    <input type="number" id="outstandingFYTarget" name="Outstanding FY Target" class="outstanding-field" placeholder="Target">
-                </div>
-                <div class="form-group">
-                    <label for="outstandingFYAchmt">FY Achievement:</label>
-                    <input type="number" id="outstandingFYAchmt" name="Outstanding FY Achmt" class="outstanding-field" placeholder="Achievement">
-                </div>
-            </div>
-            <div class="outstanding-period-group" data-category="Outstanding" data-period="Quarter">
-                <div class="form-group">
-                    <label for="outstandingQuarterTarget">Quarter Target:</label>
-                    <input type="number" id="outstandingQuarterTarget" name="Outstanding Quarter Target" class="outstanding-field" placeholder="Target">
-                </div>
-                <div class="form-group">
-                    <label for="outstandingQuarterAchmt">Quarter Achievement:</label>
-                    <input type="number" id="outstandingQuarterAchmt" name="Outstanding Quarter Achmt" class="outstanding-field" placeholder="Achievement">
-                </div>
-            </div>
-            <div class="outstanding-period-group" data-category="Outstanding" data-period="Month">
-                <div class="form-group">
-                    <label for="outstandingMonthTarget">Month Target:</label>
-                    <input type="number" id="outstandingMonthTarget" name="Outstanding Month Target" class="outstanding-field" placeholder="Target">
-                </div>
-                <div class="form-group">
-                    <label for="outstandingMonthAchmt">Month Achievement:</label>
-                    <input type="number" id="outstandingMonthAchmt" name="Outstanding Month Achmt" class="outstanding-field" placeholder="Achievement">
-                </div>
-            </div>
-
-            <h3>Net Growth</h3>
-            <div class="net-growth-period-group" data-category="Net Growth" data-period="FY">
-                <div class="form-group">
-                    <label for="netGrowthFYTarget">FY Target:</label>
-                    <input type="number" id="netGrowthFYTarget" name="Net Growth FY Target" placeholder="Target">
-                </div>
-                <div class="form-group">
-                    <label for="netGrowthFYAchmt">FY Achievement:</label>
-                    <input type="number" id="netGrowthFYAchmt" name="Net Growth FY Achmt" placeholder="Achievement">
-                </div>
-            </div>
-            <div class="net-growth-period-group" data-category="Net Growth" data-period="Quarter">
-                <div class="form-group">
-                    <label for="netGrowthQuarterTarget">Quarter Target:</label>
-                    <input type="number" id="netGrowthQuarterTarget" name="Net Growth Quarter Target" placeholder="Target">
-                </div>
-                <div class="form-group">
-                    <label for="netGrowthQuarterAchmt">Quarter Achievement:</label>
-                    <input type="number" id="netGrowthQuarterAchmt" name="Net Growth Quarter Achmt" placeholder="Achievement">
-                </div>
-            </div>
-            <div class="net-growth-period-group" data-category="Net Growth" data-period="Month">
-                <div class="form-group">
-                    <label for="netGrowthMonthTarget">Month Target:</label>
-                    <input type="number" id="netGrowthMonthTarget" name="Net Growth Month Target" placeholder="Target">
-                </div>
-                <div class="form-group">
-                    <label for="netGrowthMonthAchmt">Month Achievement:</label>
-                    <input type="number" id="netGrowthMonthAchmt" name="Net Growth Month Achmt" placeholder="Achievement">
-                </div>
-            </div>
-            <div class="net-growth-period-group" data-category="Net Growth" data-period="Week" data-week="1">
-                <div class="form-group">
-                    <label for="netGrowthWeek1Target">WEEK 1 Target:</label>
-                    <input type="number" id="netGrowthWeek1Target" name="Net Growth WEEK 1 Target" data-week="1" placeholder="Target">
-                </div>
-                <div class="form-group">
-                    <label for="netGrowthWeek1Achmt">WEEK 1 Achievement:</label>
-                    <input type="number" id="netGrowthWeek1Achmt" name="Net Growth WEEK 1 Achmt" data-week="1" placeholder="Achievement">
-                </div>
-            </div>
-            <div class="net-growth-period-group" data-category="Net Growth" data-period="Week" data-week="2">
-                <div class="form-group">
-                    <label for="netGrowthWeek2Target">WEEK 2 Target:</label>
-                    <input type="number" id="netGrowthWeek2Target" name="Net Growth WEEK 2 Target" data-week="2" placeholder="Target">
-                </div>
-                <div class="form-group">
-                    <label for="netGrowthWeek2Achmt">WEEK 2 Achievement:</label>
-                    <input type="number" id="netGrowthWeek2Achmt" name="Net Growth WEEK 2 Achmt" data-week="2" placeholder="Achievement">
-                </div>
-            </div>
-            <div class="net-growth-period-group" data-category="Net Growth" data-period="Week" data-week="3">
-                <div class="form-group">
-                    <label for="netGrowthWeek3Target">WEEK 3 Target:</label>
-                    <input type="number" id="netGrowthWeek3Target" name="Net Growth WEEK 3 Target" data-week="3" placeholder="Target">
-                </div>
-                <div class="form-group">
-                    <label for="netGrowthWeek3Achmt">WEEK 3 Achievement:</label>
-                    <input type="number" id="netGrowthWeek3Achmt" name="Net Growth WEEK 3 Achmt" data-week="3" placeholder="Achievement">
-                </div>
-            </div>
-            <div class="net-growth-period-group" data-category="Net Growth" data-period="Week" data-week="4">
-                <div class="form-group">
-                    <label for="netGrowthWeek4Target">WEEK 4 Target:</label>
-                    <input type="number" id="netGrowthWeek4Target" name="Net Growth WEEK 4 Target" data-week="4" placeholder="Target">
-                </div>
-                <div class="form-group">
-                    <label for="netGrowthWeek4Achmt">WEEK 4 Achievement:</label>
-                    <input type="number" id="netGrowthWeek4Achmt" name="Net Growth WEEK 4 Achmt" data-week="4" placeholder="Achievement">
-                </div>
-            </div>
-
-            <h3>Fresh Customer</h3>
-            <div class="fresh-customer-period-group" data-category="Fresh Customer" data-period="Quarter">
-                <div class="form-group">
-                    <label for="freshCustomerQuarterTarget">Quarter Target:</label>
-                    <input type="number" id="freshCustomerQuarterTarget" name="Fresh Customer Quarter Target" placeholder="Target">
-                </div>
-                <div class="form-group">
-                    <label for="freshCustomerQuarterAchmt">Quarter Achievement:</label>
-                    <input type="number" id="freshCustomerQuarterAchmt" name="Fresh Customer Quarter Achmt" placeholder="Achievement">
-                </div>
-            </div>
-            <div class="fresh-customer-period-group" data-category="Fresh Customer" data-period="Month">
-                <div class="form-group">
-                    <label for="freshCustomerMonthTarget">Month Target:</label>
-                    <input type="number" id="freshCustomerMonthTarget" name="Fresh Customer Month Target" placeholder="Target">
-                </div>
-                <div class="form-group">
-                    <label for="freshCustomerMonthAchmt">Month Achievement:</label>
-                    <input type="number" id="freshCustomerMonthAchmt" name="Fresh Customer Month Achmt" placeholder="Achievement">
-                </div>
-            </div>
-            <div class="fresh-customer-period-group" data-category="Fresh Customer" data-period="Week" data-week="1">
-                <div class="form-group">
-                    <label for="freshCustomerWeek1Target">WEEK 1 Target:</label>
-                    <input type="number" id="freshCustomerWeek1Target" name="Fresh Customer WEEK 1 Target" data-week="1" placeholder="Target">
-                </div>
-                <div class="form-group">
-                    <label for="freshCustomerWeek1Achmt">WEEK 1 Achievement:</label>
-                    <input type="number" id="freshCustomerWeek1Achmt" name="Fresh Customer WEEK 1 Achmt" data-week="1" placeholder="Achievement">
-                </div>
-            </div>
-            <div class="fresh-customer-period-group" data-category="Fresh Customer" data-period="Week" data-week="2">
-                <div class="form-group">
-                    <label for="freshCustomerWeek2Target">WEEK 2 Target:</label>
-                    <input type="number" id="freshCustomerWeek2Target" name="Fresh Customer WEEK 2 Target" data-week="2" placeholder="Target">
-                </div>
-                <div class="form-group">
-                    <label for="freshCustomerWeek2Achmt">WEEK 2 Achievement:</label>
-                    <input type="number" id="freshCustomerWeek2Achmt" name="Fresh Customer WEEK 2 Achmt" data-week="2" placeholder="Achievement">
-                </div>
-            </div>
-            <div class="fresh-customer-period-group" data-category="Fresh Customer" data-period="Week" data-week="3">
-                <div class="form-group">
-                    <label for="freshCustomerWeek3Target">WEEK 3 Target:</label>
-                    <input type="number" id="freshCustomerWeek3Target" name="Fresh Customer WEEK 3 Target" data-week="3" placeholder="Target">
-                </div>
-                <div class="form-group">
-                    <label for="freshCustomerWeek3Achmt">WEEK 3 Achievement:</label>
-                    <input type="number" id="freshCustomerWeek3Achmt" name="Fresh Customer WEEK 3 Achmt" data-week="3" placeholder="Achievement">
-                </div>
-            </div>
-            <div class="fresh-customer-period-group" data-category="Fresh Customer" data-period="Week" data-week="4">
-                <div class="form-group">
-                    <label for="freshCustomerWeek4Target">WEEK 4 Target:</label>
-                    <input type="number" id="freshCustomerWeek4Target" name="Fresh Customer WEEK 4 Target" data-week="4" placeholder="Target">
-                </div>
-                <div class="form-group">
-                    <label for="freshCustomerWeek4Achmt">WEEK 4 Achievement:</label>
-                    <input type="number" id="freshCustomerWeek4Achmt" name="Fresh Customer WEEK 4 Achmt" data-week="4" placeholder="Achievement">
-                </div>
-            </div>
-
-            <h3>Actual Customer Base</h3>
             <div class="form-group">
-                <label for="actualCustomerBase">Current Base:</label>
-                <input type="number" id="actualCustomerBase" name="Actual Customer Base" placeholder="Enter current customer base">
+                <label for="performanceCategory">Select Performance Category:</label>
+                <select id="performanceCategory" name="Performance Category" required>
+                    <option value="">Select a category</option>
+                    <option value="Outstanding">Outstanding</option>
+                    <option value="Net Growth">Net Growth</option>
+                    <option value="Fresh Customer">Fresh Customer</option>
+                    <option value="Actual Customer Base">Actual Customer Base</option>
+                    <option value="Visits">Visits</option>
+                    <option value="Calls">Calls</option>
+                    <option value="RD">RD</option>
+                    <option value="Reference">Reference</option>
+                </select>
             </div>
 
-            <h3>Visits</h3>
-            <div class="visits-period-group" data-category="Visits" data-period="Month">
-                <div class="form-group">
-                    <label for="visitsMonthTarget">Month Target:</label>
-                    <input type="number" id="visitsMonthTarget" name="Visits Month Target" placeholder="Target">
+            <div id="outstandingSection" class="category-section hidden-category-section">
+                <h3>Outstanding</h3>
+                <div class="outstanding-period-group" data-category="Outstanding" data-period="FY">
+                    <div class="form-group">
+                        <label for="outstandingFYTarget">FY Target:</label>
+                        <input type="number" id="outstandingFYTarget" name="Outstanding FY Target" class="outstanding-field" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="outstandingFYAchmt">FY Achievement:</label>
+                        <input type="number" id="outstandingFYAchmt" name="Outstanding FY Achmt" class="outstanding-field" placeholder="Achievement">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="visitsMonthAchmt">Month Achievement:</label>
-                    <input type="number" id="visitsMonthAchmt" name="Visits Month Achmt" placeholder="Achievement">
+                <div class="outstanding-period-group" data-category="Outstanding" data-period="Quarter">
+                    <div class="form-group">
+                        <label for="outstandingQuarterTarget">Quarter Target:</label>
+                        <input type="number" id="outstandingQuarterTarget" name="Outstanding Quarter Target" class="outstanding-field" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="outstandingQuarterAchmt">Quarter Achievement:</label>
+                        <input type="number" id="outstandingQuarterAchmt" name="Outstanding Quarter Achmt" class="outstanding-field" placeholder="Achievement">
+                    </div>
                 </div>
-            </div>
-            <div class="visits-period-group" data-category="Visits" data-period="Week" data-week="1">
-                <div class="form-group">
-                    <label for="visitsWeek1Target">WEEK 1 Target:</label>
-                    <input type="number" id="visitsWeek1Target" name="Visits WEEK 1 Target" data-week="1" placeholder="Target">
-                </div>
-                <div class="form-group">
-                    <label for="visitsWeek1Achmt">WEEK 1 Achievement:</label>
-                    <input type="number" id="visitsWeek1Achmt" name="Visits WEEK 1 Achmt" data-week="1" placeholder="Achievement">
-                </div>
-            </div>
-            <div class="visits-period-group" data-category="Visits" data-period="Week" data-week="2">
-                <div class="form-group">
-                    <label for="visitsWeek2Target">WEEK 2 Target:</label>
-                    <input type="number" id="visitsWeek2Target" name="Visits WEEK 2 Target" data-week="2" placeholder="Target">
-                </div>
-                <div class="form-group">
-                    <label for="visitsWeek2Achmt">WEEK 2 Achievement:</label>
-                    <input type="number" id="visitsWeek2Achmt" name="Visits WEEK 2 Achmt" data-week="2" placeholder="Achievement">
-                </div>
-            </div>
-            <div class="visits-period-group" data-category="Visits" data-period="Week" data-week="3">
-                <div class="form-group">
-                    <label for="visitsWeek3Target">WEEK 3 Target:</label>
-                    <input type="number" id="visitsWeek3Target" name="Visits WEEK 3 Target" data-week="3" placeholder="Target">
-                </div>
-                <div class="form-group">
-                    <label for="visitsWeek3Achmt">WEEK 3 Achievement:</label>
-                    <input type="number" id="visitsWeek3Achmt" name="Visits WEEK 3 Achmt" data-week="3" placeholder="Achievement">
-                </div>
-            </div>
-            <div class="visits-period-group" data-category="Visits" data-period="Week" data-week="4">
-                <div class="form-group">
-                    <label for="visitsWeek4Target">WEEK 4 Target:</label>
-                    <input type="number" id="visitsWeek4Target" name="Visits WEEK 4 Target" data-week="4" placeholder="Target">
-                </div>
-                <div class="form-group">
-                    <label for="visitsWeek4Achmt">WEEK 4 Achievement:</label>
-                    <input type="number" id="visitsWeek4Achmt" name="Visits WEEK 4 Achmt" data-week="4" placeholder="Achievement">
+                <div class="outstanding-period-group" data-category="Outstanding" data-period="Month">
+                    <div class="form-group">
+                        <label for="outstandingMonthTarget">Month Target:</label>
+                        <input type="number" id="outstandingMonthTarget" name="Outstanding Month Target" class="outstanding-field" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="outstandingMonthAchmt">Month Achievement:</label>
+                        <input type="number" id="outstandingMonthAchmt" name="Outstanding Month Achmt" class="outstanding-field" placeholder="Achievement">
+                    </div>
                 </div>
             </div>
 
-            <h3>Calls</h3>
-            <div class="calls-period-group" data-category="Calls" data-period="Month">
-                <div class="form-group">
-                    <label for="callsMonthTarget">Month Target:</label>
-                    <input type="number" id="callsMonthTarget" name="Calls Month Target" placeholder="Target">
+            <div id="netGrowthSection" class="category-section hidden-category-section">
+                <h3>Net Growth</h3>
+                <div class="net-growth-period-group" data-category="Net Growth" data-period="FY">
+                    <div class="form-group">
+                        <label for="netGrowthFYTarget">FY Target:</label>
+                        <input type="number" id="netGrowthFYTarget" name="Net Growth FY Target" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="netGrowthFYAchmt">FY Achievement:</label>
+                        <input type="number" id="netGrowthFYAchmt" name="Net Growth FY Achmt" placeholder="Achievement">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="callsMonthAchmt">Month Achievement:</label>
-                    <input type="number" id="callsMonthAchmt" name="Calls Month Achmt" placeholder="Achievement">
+                <div class="net-growth-period-group" data-category="Net Growth" data-period="Quarter">
+                    <div class="form-group">
+                        <label for="netGrowthQuarterTarget">Quarter Target:</label>
+                        <input type="number" id="netGrowthQuarterTarget" name="Net Growth Quarter Target" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="netGrowthQuarterAchmt">Quarter Achievement:</label>
+                        <input type="number" id="netGrowthQuarterAchmt" name="Net Growth Quarter Achmt" placeholder="Achievement">
+                    </div>
+                </div>
+                <div class="net-growth-period-group" data-category="Net Growth" data-period="Month">
+                    <div class="form-group">
+                        <label for="netGrowthMonthTarget">Month Target:</label>
+                        <input type="number" id="netGrowthMonthTarget" name="Net Growth Month Target" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="netGrowthMonthAchmt">Month Achievement:</label>
+                        <input type="number" id="netGrowthMonthAchmt" name="Net Growth Month Achmt" placeholder="Achievement">
+                    </div>
+                </div>
+                <div class="net-growth-period-group" data-category="Net Growth" data-period="Week" data-week="1">
+                    <div class="form-group">
+                        <label for="netGrowthWeek1Target">WEEK 1 Target:</label>
+                        <input type="number" id="netGrowthWeek1Target" name="Net Growth WEEK 1 Target" data-week="1" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="netGrowthWeek1Achmt">WEEK 1 Achievement:</label>
+                        <input type="number" id="netGrowthWeek1Achmt" name="Net Growth WEEK 1 Achmt" data-week="1" placeholder="Achievement">
+                    </div>
+                </div>
+                <div class="net-growth-period-group" data-category="Net Growth" data-period="Week" data-week="2">
+                    <div class="form-group">
+                        <label for="netGrowthWeek2Target">WEEK 2 Target:</label>
+                        <input type="number" id="netGrowthWeek2Target" name="Net Growth WEEK 2 Target" data-week="2" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="netGrowthWeek2Achmt">WEEK 2 Achievement:</label>
+                        <input type="number" id="netGrowthWeek2Achmt" name="Net Growth WEEK 2 Achmt" data-week="2" placeholder="Achievement">
+                    </div>
+                </div>
+                <div class="net-growth-period-group" data-category="Net Growth" data-period="Week" data-week="3">
+                    <div class="form-group">
+                        <label for="netGrowthWeek3Target">WEEK 3 Target:</label>
+                        <input type="number" id="netGrowthWeek3Target" name="Net Growth WEEK 3 Target" data-week="3" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="netGrowthWeek3Achmt">WEEK 3 Achievement:</label>
+                        <input type="number" id="netGrowthWeek3Achmt" name="Net Growth WEEK 3 Achmt" data-week="3" placeholder="Achievement">
+                    </div>
+                </div>
+                <div class="net-growth-period-group" data-category="Net Growth" data-period="Week" data-week="4">
+                    <div class="form-group">
+                        <label for="netGrowthWeek4Target">WEEK 4 Target:</label>
+                        <input type="number" id="netGrowthWeek4Target" name="Net Growth WEEK 4 Target" data-week="4" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="netGrowthWeek4Achmt">WEEK 4 Achievement:</label>
+                        <input type="number" id="netGrowthWeek4Achmt" name="Net Growth WEEK 4 Achmt" data-week="4" placeholder="Achievement">
+                    </div>
                 </div>
             </div>
-            <div class="calls-period-group" data-category="Calls" data-period="Week" data-week="1">
-                <div class="form-group">
-                    <label for="callsWeek1Target">WEEK 1 Target:</label>
-                    <input type="number" id="callsWeek1Target" name="Calls WEEK 1 Target" data-week="1" placeholder="Target">
+
+            <div id="freshCustomerSection" class="category-section hidden-category-section">
+                <h3>Fresh Customer</h3>
+                <div class="fresh-customer-period-group" data-category="Fresh Customer" data-period="Quarter">
+                    <div class="form-group">
+                        <label for="freshCustomerQuarterTarget">Quarter Target:</label>
+                        <input type="number" id="freshCustomerQuarterTarget" name="Fresh Customer Quarter Target" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="freshCustomerQuarterAchmt">Quarter Achievement:</label>
+                        <input type="number" id="freshCustomerQuarterAchmt" name="Fresh Customer Quarter Achmt" placeholder="Achievement">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="callsWeek1Achmt">WEEK 1 Achievement:</label>
-                    <input type="number" id="callsWeek1Achmt" name="Calls WEEK 1 Achmt" data-week="1" placeholder="Achievement">
+                <div class="fresh-customer-period-group" data-category="Fresh Customer" data-period="Month">
+                    <div class="form-group">
+                        <label for="freshCustomerMonthTarget">Month Target:</label>
+                        <input type="number" id="freshCustomerMonthTarget" name="Fresh Customer Month Target" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="freshCustomerMonthAchmt">Month Achievement:</label>
+                        <input type="number" id="freshCustomerMonthAchmt" name="Fresh Customer Month Achmt" placeholder="Achievement">
+                    </div>
+                </div>
+                <div class="fresh-customer-period-group" data-category="Fresh Customer" data-period="Week" data-week="1">
+                    <div class="form-group">
+                        <label for="freshCustomerWeek1Target">WEEK 1 Target:</label>
+                        <input type="number" id="freshCustomerWeek1Target" name="Fresh Customer WEEK 1 Target" data-week="1" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="freshCustomerWeek1Achmt">WEEK 1 Achievement:</label>
+                        <input type="number" id="freshCustomerWeek1Achmt" name="Fresh Customer WEEK 1 Achmt" data-week="1" placeholder="Achievement">
+                    </div>
+                </div>
+                <div class="fresh-customer-period-group" data-category="Fresh Customer" data-period="Week" data-week="2">
+                    <div class="form-group">
+                        <label for="freshCustomerWeek2Target">WEEK 2 Target:</label>
+                        <input type="number" id="freshCustomerWeek2Target" name="Fresh Customer WEEK 2 Target" data-week="2" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="freshCustomerWeek2Achmt">WEEK 2 Achievement:</label>
+                        <input type="number" id="freshCustomerWeek2Achmt" name="Fresh Customer WEEK 2 Achmt" data-week="2" placeholder="Achievement">
+                    </div>
+                </div>
+                <div class="fresh-customer-period-group" data-category="Fresh Customer" data-period="Week" data-week="3">
+                    <div class="form-group">
+                        <label for="freshCustomerWeek3Target">WEEK 3 Target:</label>
+                        <input type="number" id="freshCustomerWeek3Target" name="Fresh Customer WEEK 3 Target" data-week="3" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="freshCustomerWeek3Achmt">WEEK 3 Achievement:</label>
+                        <input type="number" id="freshCustomerWeek3Achmt" name="Fresh Customer WEEK 3 Achmt" data-week="3" placeholder="Achievement">
+                    </div>
+                </div>
+                <div class="fresh-customer-period-group" data-category="Fresh Customer" data-period="Week" data-week="4">
+                    <div class="form-group">
+                        <label for="freshCustomerWeek4Target">WEEK 4 Target:</label>
+                        <input type="number" id="freshCustomerWeek4Target" name="Fresh Customer WEEK 4 Target" data-week="4" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="freshCustomerWeek4Achmt">WEEK 4 Achievement:</label>
+                        <input type="number" id="freshCustomerWeek4Achmt" name="Fresh Customer WEEK 4 Achmt" data-week="4" placeholder="Achievement">
+                    </div>
                 </div>
             </div>
-            <div class="calls-period-group" data-category="Calls" data-period="Week" data-week="2">
+
+            <div id="actualCustomerBaseSection" class="category-section hidden-category-section">
+                <h3>Actual Customer Base</h3>
                 <div class="form-group">
-                    <label for="callsWeek2Target">WEEK 2 Target:</label>
-                    <input type="number" id="callsWeek2Target" name="Calls WEEK 2 Target" data-week="2" placeholder="Target">
-                </div>
-                <div class="form-group">
-                    <label for="callsWeek2Achmt">WEEK 2 Achievement:</label>
-                    <input type="number" id="callsWeek2Achmt" name="Calls WEEK 2 Achmt" data-week="2" placeholder="Achievement">
+                    <label for="actualCustomerBase">Current Base:</label>
+                    <input type="number" id="actualCustomerBase" name="Actual Customer Base" placeholder="Enter current customer base">
                 </div>
             </div>
-            <div class="calls-period-group" data-category="Calls" data-period="Week" data-week="3">
-                <div class="form-group">
-                    <label for="callsWeek3Target">WEEK 3 Target:</label>
-                    <input type="number" id="callsWeek3Target" name="Calls WEEK 3 Target" data-week="3" placeholder="Target">
+
+            <div id="visitsSection" class="category-section hidden-category-section">
+                <h3>Visits</h3>
+                <div class="visits-period-group" data-category="Visits" data-period="Month">
+                    <div class="form-group">
+                        <label for="visitsMonthTarget">Month Target:</label>
+                        <input type="number" id="visitsMonthTarget" name="Visits Month Target" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="visitsMonthAchmt">Month Achievement:</label>
+                        <input type="number" id="visitsMonthAchmt" name="Visits Month Achmt" placeholder="Achievement">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="callsWeek3Achmt">WEEK 3 Achievement:</label>
-                    <input type="number" id="callsWeek3Achmt" name="Calls WEEK 3 Achmt" data-week="3" placeholder="Achievement">
+                <div class="visits-period-group" data-category="Visits" data-period="Week" data-week="1">
+                    <div class="form-group">
+                        <label for="visitsWeek1Target">WEEK 1 Target:</label>
+                        <input type="number" id="visitsWeek1Target" name="Visits WEEK 1 Target" data-week="1" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="visitsWeek1Achmt">WEEK 1 Achievement:</label>
+                        <input type="number" id="visitsWeek1Achmt" name="Visits WEEK 1 Achmt" data-week="1" placeholder="Achievement">
+                    </div>
+                </div>
+                <div class="visits-period-group" data-category="Visits" data-period="Week" data-week="2">
+                    <div class="form-group">
+                        <label for="visitsWeek2Target">WEEK 2 Target:</label>
+                        <input type="number" id="visitsWeek2Target" name="Visits WEEK 2 Target" data-week="2" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="visitsWeek2Achmt">WEEK 2 Achievement:</label>
+                        <input type="number" id="visitsWeek2Achmt" name="Visits WEEK 2 Achmt" data-week="2" placeholder="Achievement">
+                    </div>
+                </div>
+                <div class="visits-period-group" data-category="Visits" data-period="Week" data-week="3">
+                    <div class="form-group">
+                        <label for="visitsWeek3Target">WEEK 3 Target:</label>
+                        <input type="number" id="visitsWeek3Target" name="Visits WEEK 3 Target" data-week="3" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="visitsWeek3Achmt">WEEK 3 Achievement:</label>
+                        <input type="number" id="visitsWeek3Achmt" name="Visits WEEK 3 Achmt" data-week="3" placeholder="Achievement">
+                    </div>
+                </div>
+                <div class="visits-period-group" data-category="Visits" data-period="Week" data-week="4">
+                    <div class="form-group">
+                        <label for="visitsWeek4Target">WEEK 4 Target:</label>
+                        <input type="number" id="visitsWeek4Target" name="Visits WEEK 4 Target" data-week="4" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="visitsWeek4Achmt">WEEK 4 Achievement:</label>
+                        <input type="number" id="visitsWeek4Achmt" name="Visits WEEK 4 Achmt" data-week="4" placeholder="Achievement">
+                    </div>
                 </div>
             </div>
-            <div class="calls-period-group" data-category="Calls" data-period="Week" data-week="4">
-                <div class="form-group">
-                    <label for="callsWeek4Target">WEEK 4 Target:</label>
-                    <input type="number" id="callsWeek4Target" name="Calls WEEK 4 Target" data-week="4" placeholder="Target">
+
+            <div id="callsSection" class="category-section hidden-category-section">
+                <h3>Calls</h3>
+                <div class="calls-period-group" data-category="Calls" data-period="Month">
+                    <div class="form-group">
+                        <label for="callsMonthTarget">Month Target:</label>
+                        <input type="number" id="callsMonthTarget" name="Calls Month Target" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="callsMonthAchmt">Month Achievement:</label>
+                        <input type="number" id="callsMonthAchmt" name="Calls Month Achmt" placeholder="Achievement">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="callsWeek4Achmt">WEEK 4 Achievement:</label>
-                    <input type="number" id="callsWeek4Achmt" name="Calls WEEK 4 Achmt" data-week="4" placeholder="Achievement">
+                <div class="calls-period-group" data-category="Calls" data-period="Week" data-week="1">
+                    <div class="form-group">
+                        <label for="callsWeek1Target">WEEK 1 Target:</label>
+                        <input type="number" id="callsWeek1Target" name="Calls WEEK 1 Target" data-week="1" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="callsWeek1Achmt">WEEK 1 Achievement:</label>
+                        <input type="number" id="callsWeek1Achmt" name="Calls WEEK 1 Achmt" data-week="1" placeholder="Achievement">
+                    </div>
+                </div>
+                <div class="calls-period-group" data-category="Calls" data-period="Week" data-week="2">
+                    <div class="form-group">
+                        <label for="callsWeek2Target">WEEK 2 Target:</label>
+                        <input type="number" id="callsWeek2Target" name="Calls WEEK 2 Target" data-week="2" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="callsWeek2Achmt">WEEK 2 Achievement:</label>
+                        <input type="number" id="callsWeek2Achmt" name="Calls WEEK 2 Achmt" data-week="2" placeholder="Achievement">
+                    </div>
+                </div>
+                <div class="calls-period-group" data-category="Calls" data-period="Week" data-week="3">
+                    <div class="form-group">
+                        <label for="callsWeek3Target">WEEK 3 Target:</label>
+                        <input type="number" id="callsWeek3Target" name="Calls WEEK 3 Target" data-week="3" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="callsWeek3Achmt">WEEK 3 Achievement:</label>
+                        <input type="number" id="callsWeek3Achmt" name="Calls WEEK 3 Achmt" data-week="3" placeholder="Achievement">
+                    </div>
+                </div>
+                <div class="calls-period-group" data-category="Calls" data-period="Week" data-week="4">
+                    <div class="form-group">
+                        <label for="callsWeek4Target">WEEK 4 Target:</label>
+                        <input type="number" id="callsWeek4Target" name="Calls WEEK 4 Target" data-week="4" placeholder="Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="callsWeek4Achmt">WEEK 4 Achievement:</label>
+                        <input type="number" id="callsWeek4Achmt" name="Calls WEEK 4 Achmt" data-week="4" placeholder="Achievement">
+                    </div>
                 </div>
             </div>
+
+            <div id="rdSection" class="category-section hidden-category-section">
+                <h3>RD</h3>
+                <div class="form-group">
+                    <label for="rdTarget">RD Target:</label>
+                    <input type="number" id="rdTarget" name="RD Target" placeholder="Target">
+                </div>
+                <div class="form-group">
+                    <label for="rdAchmt">RD Achievement:</label>
+                    <input type="number" id="rdAchmt" name="RD Achievement" placeholder="Achievement">
+                </div>
+                </div>
+
+            <div id="referenceSection" class="category-section hidden-category-section">
+                <h3>Reference</h3>
+                <div class="form-group">
+                    <label for="referenceName">Reference Name:</label>
+                    <input type="text" id="referenceName" name="Reference Name" placeholder="Name">
+                </div>
+                <div class="form-group">
+                    <label for="referenceContact">Reference Contact:</label>
+                    <input type="text" id="referenceContact" name="Reference Contact" placeholder="Contact Info">
+                </div>
+                </div>
+
 
             <button type="submit">Submit Performance Data</button>
         </form>
@@ -339,5 +395,6 @@
         </div>
     </div>
 
-    <script src="script.js"></script> </body>
+    <script src="script.js"></script>
+</body>
 </html>
