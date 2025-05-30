@@ -1,7 +1,7 @@
 /* General Body and Container Styles */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #eef1f5; /* Light background */
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
     margin: 0;
     padding: 20px;
     display: flex;
@@ -14,10 +14,10 @@ body {
 .container {
     background-color: #ffffff;
     padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    max-width: 900px; /* Wider container */
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
     width: 100%;
+    max-width: 800px; /* Increased max-width for better layout */
     box-sizing: border-box;
 }
 
@@ -25,120 +25,110 @@ h1, h2, h3 {
     color: #333;
     text-align: center;
     margin-bottom: 20px;
-    font-weight: 600;
-}
-
-h1 {
-    font-size: 2.2em;
-    color: #0056b3;
-    margin-top: 0;
-}
-
-h2 {
-    font-size: 1.8em;
-    color: #444;
 }
 
 h3 {
-    font-size: 1.4em;
-    color: #555;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 10px;
     margin-top: 30px;
-}
-
-/* Form Group and Input Styles */
-.form-group {
-    margin-bottom: 18px;
-    display: flex;
-    flex-direction: column;
-}
-
-label {
-    display: block;
-    margin-bottom: 8px;
     color: #555;
-    font-weight: 500;
-    font-size: 0.95em;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
 }
 
-input[type="text"],
-input[type="number"],
-select {
-    width: 100%;
-    padding: 12px 15px;
+/* Form Group Styling */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+    font-weight: bold;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select {
+    width: calc(100% - 20px); /* Adjusting for padding */
+    padding: 10px;
     border: 1px solid #ddd;
-    border-radius: 8px;
+    border-radius: 4px;
     box-sizing: border-box;
-    font-size: 1em;
-    color: #333;
-    transition: border-color 0.3s, box-shadow 0.3s;
+    font-size: 16px;
 }
 
-input[type="text"]:focus,
-input[type="number"]:focus,
-select:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
-    outline: none;
+.form-group input[type="number"] {
+    -moz-appearance: textfield; /* Firefox specific to remove arrows */
+}
+.form-group input[type="number"]::-webkit-outer-spin-button,
+.form-group input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none; /* Webkit specific to remove arrows */
+    margin: 0;
 }
 
-/* Field Sections (for period groups like Outstanding, Net Growth) */
+/* Flexbox for Target/Achievement groups */
 .outstanding-period-group,
 .net-growth-period-group,
 .fresh-customer-period-group,
 .visits-period-group,
-.calls-period-group {
+.calls-period-group,
+.rd-period-group, /* Added for RD */
+.reference-group /* Added for Reference */
+{
+    display: flex;
+    flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+    gap: 15px; /* Space between input pairs */
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
     background-color: #f9f9f9;
-    border: 1px solid #eee;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 25px;
-    display: grid; /* Use grid for internal layout */
-    gap: 15px; /* Spacing between grid items */
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsive columns */
-    align-items: end; /* Align items to the bottom */
 }
 
-/* Styling for hidden fields (though we removed hide logic, keeping this class for flexibility) */
-.hidden-field-group {
-    display: none !important; /* Forces the group to be hidden */
+.outstanding-period-group .form-group,
+.net-growth-period-group .form-group,
+.fresh-customer-period-group .form-group,
+.visits-period-group .form-group,
+.calls-period-group .form-group,
+.rd-period-group .form-group,
+.reference-group .form-group {
+    flex: 1 1 calc(50% - 15px); /* Allows two items per row with gap */
+    min-width: 250px; /* Minimum width before wrapping */
+    margin-bottom: 0; /* Remove extra margin from .form-group */
 }
 
-/* Button Styles */
-button[type="submit"] {
-    background-color: #28a745; /* Green submit button */
+/* Submit Button */
+button[type="submit"],
+.message button {
+    background-color: #007bff;
     color: white;
-    padding: 15px 25px;
+    padding: 12px 20px;
     border: none;
-    border-radius: 8px;
-    font-size: 1.1em;
+    border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s;
+    font-size: 18px;
     width: 100%;
     margin-top: 20px;
-    font-weight: 600;
+    transition: background-color 0.3s ease;
 }
 
-button[type="submit"]:hover {
-    background-color: #218838;
-    transform: translateY(-2px);
+button[type="submit"]:hover,
+.message button:hover {
+    background-color: #0056b3;
 }
 
 button[type="submit"]:disabled {
     background-color: #cccccc;
     cursor: not-allowed;
-    transform: none;
 }
 
 /* Message Styles */
 .message {
     padding: 15px;
-    border-radius: 8px;
+    border-radius: 5px;
     margin-top: 20px;
     text-align: center;
-    font-size: 1.1em;
-    font-weight: 500;
+    font-weight: bold;
 }
 
 .success-message {
@@ -153,42 +143,37 @@ button[type="submit"]:disabled {
     border: 1px solid #f5c6cb;
 }
 
-.message button {
-    background-color: #007bff;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 0.9em;
-    cursor: pointer;
-    margin-top: 15px;
-    transition: background-color 0.3s;
+.message p {
+    margin-top: 0;
+    margin-bottom: 15px;
 }
 
-.message button:hover {
-    background-color: #0056b3;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
+/* Responsive Adjustments */
+@media (max-width: 600px) {
     .container {
         padding: 20px;
+        margin: 10px;
     }
-    h1 {
-        font-size: 1.8em;
+
+    .outstanding-period-group .form-group,
+    .net-growth-period-group .form-group,
+    .fresh-customer-period-group .form-group,
+    .visits-period-group .form-group,
+    .calls-period-group .form-group,
+    .rd-period-group .form-group,
+    .reference-group .form-group {
+        flex: 1 1 100%; /* Stack items on small screens */
+        min-width: unset;
     }
-    h2 {
-        font-size: 1.5em;
+
+    button[type="submit"],
+    .message button {
+        font-size: 16px;
+        padding: 10px 15px;
     }
-    h3 {
-        font-size: 1.2em;
-    }
-    .outstanding-period-group,
-    .net-growth-period-group,
-    .fresh-customer-period-group,
-    .visits-period-group,
-    .calls-period-group {
-        grid-template-columns: 1fr; /* Single column on smaller screens */
-        padding: 15px;
-    }
+}
+
+/* Class to hide category sections */
+.hidden-category-section {
+    display: none !important;
 }

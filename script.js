@@ -1,21 +1,65 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // --- IMPORTANT: REPLACE THIS WITH YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL ---
+    // This URL should be the one you get after deploying your Code.gs as an API Executable
+    const WEB_APP_URL = 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE'; 
+    // Example: https://script.google.com/macros/s/AKfycb.../exec
+
     const myForm = document.getElementById('myForm');
-    const submitButton = myForm.querySelector('button[type="submit"]'); // Get button from form
-    const successMessage = document.getElementById('formSuccessMessage');
-    const errorMessage = document.getElementById('formErrorMessage');
+    const submitButton = myForm.querySelector('button[type="submit"]');
+    const statusMessage = document.getElementById('formSuccessMessage'); // Corrected ID from index.html
+    const errorMessage = document.getElementById('formErrorMessage');   // Corrected ID from index.html
+    const branchSelect = document.getElementById('branch'); // Get the branch dropdown
     const performanceCategorySelect = document.getElementById('performanceCategory');
-    const categorySections = document.querySelectorAll('.category-section'); // All sections to hide/show
+    const categorySections = document.querySelectorAll('.category-section');
 
-    // Ensure all form inputs are enabled on page load.
-    const formInputs = myForm.querySelectorAll('input, select, textarea');
-    formInputs.forEach(input => {
-        input.disabled = false; // Enable all fields by default
-    });
+    // Function to fetch branches from Apps Script API
+    async function fetchBranches() {
+        try {
+            // Fetch branches using the API URL, not google.script.run
+            const response = await fetch(WEB_APP_URL + '?action=getBranchesList'); // Pass action parameter for doGet
+            const data = await response.json();
 
-    // Hide all category sections initially
+            if (data.error) {
+                console.error("Error fetching branches:", data.error);
+                branchSelect.innerHTML = '<option value="">Error loading branches</option>';
+                return;
+            }
+
+            branchSelect.innerHTML = '<option value="">Select Branch</option>'; // Reset dropdown
+            data.branches.forEach(branch => {
+                const option = document.createElement('option');
+                option.value = branch;
+                option.textContent = branch;
+                branchSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error("Network error fetching branches:", error);
+            branchSelect.innerHTML = '<option value="">Failed to load branches</option>';
+        }
+    }
+
+    // Helper function to reset the form fields and hide messages after submission
+    window.resetFormFieldsAndMessages = function() {
+        myForm.reset();
+        statusMessage.style.display = 'none';
+        errorMessage.style.display = 'none';
+
+        categorySections.forEach(section => {
+            section.classList.add('hidden-category-section');
+            section.querySelectorAll('input, select, textarea').forEach(input => {
+                input.disabled = true;
+            });
+        });
+        performanceCategorySelect.value = ''; // Reset category dropdown
+        fetchBranches(); // Re-fetch branches on reset to ensure latest list
+    };
+
+    // Initialize form fields and fetch branches on page load
+    fetchBranches(); // Call the function to populate branches
+
+    // Hide all category sections initially and disable their inputs
     categorySections.forEach(section => {
         section.classList.add('hidden-category-section');
-        // Disable all inputs within initially hidden sections
         section.querySelectorAll('input, select, textarea').forEach(input => {
             input.disabled = true;
         });
@@ -46,29 +90,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Helper function to reset the form fields and hide messages after submission
-    window.resetFormFieldsAndMessages = function() {
-        myForm.reset(); // Reset all form fields to their default empty state
-        successMessage.style.display = 'none';
-        errorMessage.style.display = 'none';
-
-        // Re-hide all category sections and disable their inputs after reset
-        categorySections.forEach(section => {
-            section.classList.add('hidden-category-section');
-            section.querySelectorAll('input, select, textarea').forEach(input => {
-                input.disabled = true;
-            });
-        });
-        performanceCategorySelect.value = ''; // Reset category dropdown
-    };
-
     // Form submission handler
-    myForm.addEventListener('submit', function(e) {
+    myForm.addEventListener('submit', async function(e) {
         e.preventDefault();
 
         submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
         submitButton.disabled = true;
-        successMessage.style.display = 'none';
+        statusMessage.style.display = 'none';
         errorMessage.style.display = 'none';
 
         const formData = new FormData(this);
@@ -86,38 +114,53 @@ document.addEventListener('DOMContentLoaded', function() {
                 dataToSend[key] = value;
             }
         }
-
-        // Also ensure core fields are always sent if they are visible
+        // Add core fields always
         const coreFields = ['Branch', 'Employee name', 'User Role', 'Performance Category'];
         coreFields.forEach(field => {
             if (formData.has(field)) {
                 dataToSend[field] = formData.get(field);
             }
         });
+        dataToSend['Client Submit Timestamp'] = new Date().toISOString();
 
 
-        google.script.run
-            .withSuccessHandler(function(response) {
-                submitButton.innerHTML = 'Submit Performance Data'; // Reset button text
-                submitButton.disabled = false;
-                if (response.success) {
+        try {
+            // Use fetch for POST request to Apps Script Web App URL
+            const response = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams(dataToSend), // Send data as URL-encoded form data
+                redirect: 'follow' // Follow redirects if any
+            });
+
+            if (response.ok) {
+                const result = await response.json(); // Apps Script doPost returns JSON now
+
+                if (result.success) {
                     resetFormFieldsAndMessages();
-                    successMessage.textContent = response.message;
-                    successMessage.style.display = 'block';
-                    setTimeout(() => { successMessage.style.display = 'none'; }, 5000);
+                    statusMessage.textContent = result.message;
+                    statusMessage.style.display = 'block';
+                    setTimeout(() => { statusMessage.style.display = 'none'; }, 5000);
                 } else {
-                    errorMessage.textContent = response.message;
+                    errorMessage.textContent = result.message;
                     errorMessage.style.display = 'block';
                     setTimeout(() => { errorMessage.style.display = 'none'; }, 5000);
                 }
-            })
-            .withFailureHandler(function(error) {
-                submitButton.innerHTML = 'Submit Performance Data'; // Reset button text
-                submitButton.disabled = false;
-                errorMessage.textContent = 'An unexpected error occurred: ' + error.message;
+            } else {
+                const errorText = await response.text();
+                console.error("HTTP Error during submission:", response.status, response.statusText, errorText);
+                errorMessage.textContent = `Server error: ${response.status} ${response.statusText}. Please try again.`;
                 errorMessage.style.display = 'block';
-                setTimeout(() => { errorMessage.style.display = 'none'; }, 5000);
-            })
-            .processForm(dataToSend);
+            }
+        } catch (error) {
+            console.error('Network error submitting form:', error);
+            errorMessage.textContent = `Network error: ${error.message}. Please check your connection.`;
+            errorMessage.style.display = 'block';
+        } finally {
+            submitButton.innerHTML = 'Submit Performance Data';
+            submitButton.disabled = false;
+        }
     });
 });
