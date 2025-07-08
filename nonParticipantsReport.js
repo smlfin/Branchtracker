@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
             row['Employee Code'] = cleanedValues[0] || '';       // Employee Code is at index 0
             row['Employee Name'] = cleanedValues[2] || '';       // Employee Name is at index 2
             row['Division'] = cleanedValues[4] || '';            // Division is at index 4 (first 'Kunnamkulam')
-            row['Designation'] = cleanedValues[8] || '';         // Designation is at index 8 ('Performer', 'Capable', etc.)
+            row['Designation'] = cleanedValues[6] || '';         // Designation is at index 8 ('Performer', 'Capable', etc.)
 
             // If you have more columns or the 'Designation' is actually at another index, adjust here.
             // Example for other potential columns, if they existed and were needed:
