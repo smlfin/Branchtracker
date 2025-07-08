@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const allStaffOverallPerformanceTabBtn = document.getElementById('allStaffOverallPerformanceTabBtn');
     const nonParticipatingBranchesTabBtn = document.getElementById('nonParticipatingBranchesTabBtn');
     const branchPerformanceTabBtn = document.getElementById('branchPerformanceTabBtn');
-    const detailedCustomerViewTabBtn = document.getElementById('detailedCustomerViewTabBtn');
+    // const detailedCustomerViewTabBtn = document.getElementById('detailedCustomerViewTabBtn');
     const employeeManagementTabBtn = document.getElementById('employeeManagementTabBtn');
     const nonParticipantReportTabBtn = document.getElementById('nonParticipantReportTabBtn'); // The button for the Non-Participant Report
 
@@ -1819,7 +1819,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const passwordErrorMessage = document.getElementById('passwordErrorMessage');
    // Get references to buttons/tabs that need conditional access
     const downloadOverallStaffPerformanceReportBtn = document.getElementById('downloadOverallStaffPerformanceReportBtn');
-    const detailedCustomerViewTabBtn = document.getElementById('detailedCustomerViewTabBtn');
+    // const detailedCustomerViewTabBtn = document.getElementById('detailedCustomerViewTabBtn');
     const viewAllEntriesButton = document.getElementById('viewAllEntriesBtn'); // <--- ADD THIS LINE (OR UPDATE THE EXISTING PLACEHOLDER)
        if (secretPasswordInput) {
         secretPasswordInput.focus();
