@@ -29,11 +29,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // NEW & REWORKED Helper function to parse CSV text into an array of objects
-    // This version hardcodes the mapping based on the observed column positions in your CSV
+    // This version hardcodes the mapping based on the latest observed column positions in your CSV
     // to ensure correct data assignment regardless of the CSV's actual header names.
     function parseCSV(csvText) {
         if (!csvText) return [];
-        console.log('Attempting to parse CSV text with explicit column mapping...');
+        console.log('Attempting to parse CSV text with explicit column mapping (NEW REVISION)...');
         const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== ''); // Split by newline, remove empty lines
         if (lines.length === 0) {
             console.warn("CSV text is empty or contains no valid lines.");
@@ -74,15 +74,13 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(`  Cleaned values (by position):`, cleanedValues, `Length: ${cleanedValues.length}`);
 
             const row = {};
-            // --- IMPORTANT: Hardcoded mapping based on your provided console logs ---
-            // If your CSV column order or content changes, these indices will need adjustment.
+            // --- IMPORTANT: CORRECTED MAPPING based on the latest console logs ---
+            // If your CSV column order or content changes again, these indices will need adjustment.
 
-            // Based on logs: cleanedValues[6] contains the Employee Code
-            row['Employee Code'] = cleanedValues[0] || '';
-row['Employee Name'] = cleanedValues[1] || '';
-row['Division']      = cleanedValues[2] || '';
-row['Designation']   = cleanedValues[3] || '';
-
+            row['Employee Code'] = cleanedValues[0] || '';       // Employee Code is at index 0
+            row['Employee Name'] = cleanedValues[2] || '';       // Employee Name is at index 2
+            row['Division'] = cleanedValues[4] || '';            // Division is at index 4 (first 'Kunnamkulam')
+            row['Designation'] = cleanedValues[8] || '';         // Designation is at index 8 ('Performer', 'Capable', etc.)
 
             // If you have more columns or the 'Designation' is actually at another index, adjust here.
             // Example for other potential columns, if they existed and were needed:
