@@ -1,3 +1,5 @@
+// nonParticipantsReport.js (Updated)
+
 document.addEventListener('DOMContentLoaded', () => {
     // URL for the MasterEmployees CSV (from your Google Sheet published to web)
     const masterEmployeesCSVUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTO7LujC4VSa2wGkJ2YEYSN7UeXR221ny3THaVegYfNfRm2JQGg7QR9Bxxh9SadXtK8Pi6-psl2tGsb/pub?gid=2120288173&single=true&output=csv';
@@ -22,249 +24,168 @@ document.addEventListener('DOMContentLoaded', () => {
             return text;
         } catch (error) {
             console.error('Error fetching CSV:', error);
-            nonParticipantsMessage.textContent = `Error loading data: ${error.message}. Please check your internet connection or the CSV link.`;
+            nonParticipantsMessage.textContent = `Failed to load data: ${error.message}. Please check console for details.`;
             nonParticipantsMessage.style.display = 'block';
             return null; // Return null on error
         }
     }
 
-    // NEW & REWORKED Helper function to parse CSV text into an array of objects
-    // This version hardcodes the mapping based on the latest observed column positions in your CSV
-    // to ensure correct data assignment regardless of the CSV's actual header names.
-    function parseCSV(csvText) {
-        if (!csvText) return [];
-        console.log('Attempting to parse CSV text with explicit column mapping (NEW REVISION)...');
-        const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== ''); // Split by newline, remove empty lines
-        if (lines.length === 0) {
-            console.warn("CSV text is empty or contains no valid lines.");
-            return [];
-        }
+    // CSV parsing function (handles commas within quoted strings)
+    function parseCSV(csv) {
+        const lines = csv.split('\n').filter(line => line.trim() !== '');
+        if (lines.length === 0) return [];
 
-        // We will skip the actual header line from the CSV and instead
-        // use fixed expected headers for the output object for consistency.
-        // The first line (headers) will still be parsed to get the total number of columns
-        // and confirm the regex works, but its *names* won't be used directly for keys.
-        const rawHeadersLine = lines[0]; // Still read the first line
-        const parsedRawHeaders = rawHeadersLine.match(/(?:\"([^\"]*)\"|([^,]*))/g);
-        const actualColumnCount = parsedRawHeaders ? parsedRawHeaders.length : 0;
-        console.log(`Detected ${actualColumnCount} columns in CSV.`);
-
+        const headers = parseCSVLine(lines[0]); // Headers can also contain commas in quotes
         const data = [];
 
-        for (let i = 1; i < lines.length; i++) { // Start from the second line (index 1) for data
-            const currentLine = lines[i];
-            const valuesMatch = currentLine.match(/(?:\"([^\"]*)\"|([^,]*))/g);
+        for (let i = 1; i < lines.length; i++) {
+            const values = parseCSVLine(lines[i]);
+            if (values.length === 0 || values.every(v => v === '')) continue; // Skip entirely empty rows
 
-            if (!valuesMatch) {
-                // If a line is empty or cannot be matched by regex, skip it
-                console.warn(`Skipping empty or unmatchable row (regex returned null): "${currentLine}"`);
+            if (values.length !== headers.length) {
+                console.warn(`Skipping malformed row ${i + 1}: Expected ${headers.length} columns, got ${values.length}. Line: "${lines[i]}"`);
                 continue;
             }
-
-            const cleanedValues = valuesMatch.map(val => {
-                // Remove surrounding quotes and trim whitespace for each value
-                if (val && val.startsWith('"') && val.endsWith('"')) {
-                    return val.slice(1, -1).trim();
-                }
-                return val ? val.trim() : '';
+            const entry = {};
+            headers.forEach((header, index) => {
+                entry[header] = values[index];
             });
-
-            // Log the raw and cleaned values for debugging purposes
-            console.log(`Processing row ${i} (raw): "${currentLine}"`);
-            console.log(`  Cleaned values (by position):`, cleanedValues, `Length: ${cleanedValues.length}`);
-
-            const row = {};
-            // --- IMPORTANT: CORRECTED MAPPING based on the latest console logs ---
-            // If your CSV column order or content changes again, these indices will need adjustment.
-
-            row['Employee Code'] = cleanedValues[0] || '';       // Employee Code is at index 0
-            row['Employee Name'] = cleanedValues[2] || '';       // Employee Name is at index 2
-            row['Division'] = cleanedValues[4] || '';            // Division is at index 4 (first 'Kunnamkulam')
-            row['Designation'] = cleanedValues[8] || '';         // Designation is at index 8 ('Performer', 'Capable', etc.)
-
-            // If you have more columns or the 'Designation' is actually at another index, adjust here.
-            // Example for other potential columns, if they existed and were needed:
-            // row['Other Column'] = cleanedValues[4] || ''; // If there's data at index 4
-
-            // Check if the constructed row has at least an Employee Code or Employee Name before pushing
-            if (row['Employee Code'] || row['Employee Name']) {
-                data.push(row);
-                console.log('  Constructed Employee Object:', row); // Log the final object for verification
-            } else {
-                console.warn(`Skipping row ${i} due to insufficient meaningful data (no Employee Code or Name): "${currentLine}"`);
-            }
+            data.push(entry);
         }
-        console.log('CSV parsing complete. Number of rows:', data.length);
         return data;
     }
 
-    // Function to fetch and process Master Employees CSV
-    let masterEmployeesData = []; // Store master employee data globally for this script
+    // Helper to parse a single CSV line safely
+    function parseCSVLine(line) {
+        const result = [];
+        let inQuote = false;
+        let currentField = '';
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+                inQuote = !inQuote;
+            } else if (char === ',' && !inQuote) {
+                result.push(currentField.trim());
+                currentField = '';
+            } else {
+                currentField += char;
+            }
+        }
+        result.push(currentField.trim());
+        return result;
+    }
+
+    let masterEmployeesData = []; // To store all employees from Master Employee List
+    let allCanvassingDataFromScript = []; // From script.js's global data or fetched here
+
+    // This function needs access to all canvassing data to determine participants
+    // Assuming `window.allCanvassingData` is populated by `script.js`
+    function getParticipantEmployeeCodes(canvassingData) {
+        // Filter out entries with no employee code or activity type
+        const relevantEntries = canvassingData.filter(entry =>
+            entry['Employee Code'] && entry['Activity Type']
+        );
+        // Get unique employee codes from the relevant entries
+        const participantCodes = new Set(
+            relevantEntries.map(entry => entry['Employee Code'])
+        );
+        return Array.from(participantCodes);
+    }
 
     async function fetchMasterEmployees() {
-        console.log('Fetching Master Employees data...');
-        nonParticipantsMessage.style.display = 'none'; // Hide previous messages
-        try {
-            const csvText = await fetchCSV(masterEmployeesCSVUrl);
-            if (csvText) {
-                masterEmployeesData = parseCSV(csvText);
-                console.log('Master Employees data loaded and parsed. Total employees:', masterEmployeesData.length);
-            } else {
-                masterEmployeesData = []; // Reset on fetch error
-                console.warn('Could not fetch Master Employees CSV.');
-            }
-        } catch (error) {
-            console.error('Error in fetchMasterEmployees:', error);
-            masterEmployeesData = []; // Reset on error
-            nonParticipantsMessage.textContent = `Failed to load Master Employees: ${error.message}`;
+        nonParticipantsMessage.textContent = 'Loading master employee data...';
+        nonParticipantsMessage.style.display = 'block';
+        const csvText = await fetchCSV(masterEmployeesCSVUrl);
+        if (csvText) {
+            masterEmployeesData = parseCSV(csvText);
+            console.log('Master Employees Data:', masterEmployeesData);
+            nonParticipantsMessage.textContent = 'Master employee data loaded.';
+            setTimeout(() => nonParticipantsMessage.style.display = 'none', 3000);
+        } else {
+            masterEmployeesData = [];
+            nonParticipantsMessage.textContent = 'Failed to load master employee data.';
             nonParticipantsMessage.style.display = 'block';
         }
     }
 
-    // Function to get unique participant employee codes from the main script's data, filtered by month
-    function getParticipantEmployeeCodes() {
-        console.log('Getting participant employee codes...');
-        if (!window.allCanvassingData || !Array.isArray(window.allCanvassingData)) {
-            console.warn("Participant data (window.allCanvassingData) not found or not in expected format from main script.");
-            nonParticipantsMessage.textContent = "Error: Participant data not available from main script. Please ensure the main script loads and exposes the participant data correctly (see console for details).";
+
+    function generateAndDisplayNonParticipantsReport() {
+        nonParticipantsTableBody.innerHTML = ''; // Clear previous entries
+        nonParticipantsMessage.style.display = 'none'; // Hide any previous messages
+
+        // Ensure allCanvassingData is available from the main script.js
+        if (window.allCanvassingData && window.allCanvassingData.length > 0) {
+            allCanvassingDataFromScript = window.allCanvassingData;
+        } else {
+            nonParticipantsMessage.textContent = 'No canvassing activity data available. Cannot generate report.';
             nonParticipantsMessage.style.display = 'block';
-            return new Set();
+            return;
         }
-
-        const participantCodes = new Set();
-        const employeeCodeHeader = 'Employee Code';
-        const dateHeader = 'Date'; // This is the header for the date column in your allCanvassingData (e.g., "Date")
-
-        // Get the currently selected month value from the main month dropdown using its ID
-        const mainMonthDropdown = document.getElementById('monthSelect'); // Correctly identified ID
-        console.log('Main month dropdown element:', mainMonthDropdown);
-
-        let selectedMonthValue = ''; // This will store the "MM-YYYY" value from the dropdown
-        if (mainMonthDropdown && mainMonthDropdown.value) {
-            selectedMonthValue = mainMonthDropdown.value;
-        } else {
-            console.warn("Main month dropdown element or its value not found. Defaulting to 'All' month comparison.");
-            selectedMonthValue = 'All'; // Treat as 'All' if no specific month is selected
-        }
-        console.log('Selected month value from dropdown:', selectedMonthValue);
-
-        let filteredParticipantsData = window.allCanvassingData;
-
-        // Filter data by month if a specific month is selected (not 'All' or empty/placeholder)
-        if (selectedMonthValue && selectedMonthValue !== 'All' && selectedMonthValue !== '-- Select Month --' && selectedMonthValue !== '') {
-            console.log('Filtering participants data by month:', selectedMonthValue);
-            filteredParticipantsData = window.allCanvassingData.filter(entry => {
-                if (entry[dateHeader]) {
-                    const fullDateStr = String(entry[dateHeader]).trim(); // e.g., "08/07/2025"
-                    const parts = fullDateStr.split('/');
-                    if (parts.length === 3) {
-                        // Reformat DD/MM/YYYY to MM-YYYY for comparison
-                        const monthFromData = parts[1];
-                        const yearFromData = parts[2];
-                        const monthYearFromData = `${monthFromData}-${yearFromData}`;
-
-                        return monthYearFromData === selectedMonthValue;
-                    }
-                }
-                return false;
-            });
-            console.log('Filtered participants data length:', filteredParticipantsData.length);
-        } else {
-            console.log('Not filtering by month (selected "All" or no month). Using all participant data.');
-        }
-
-        filteredParticipantsData.forEach(entry => {
-            if (entry[employeeCodeHeader]) {
-                const normalizedCode = String(entry[employeeCodeHeader]).trim().toLowerCase();
-                participantCodes.add(normalizedCode);
-            }
-        });
-        console.log('Total unique participant codes:', participantCodes.size);
-        return participantCodes;
-    }
-
-    // Function to generate and display the non-participants report
-    async function generateAndDisplayNonParticipantsReport() {
-        console.log('Generating and displaying non-participants report...');
-        nonParticipantsMessage.style.display = 'none'; // Hide previous messages
-        nonParticipantsDisplay.style.display = 'none'; // Hide table while generating
-
-        await fetchMasterEmployees(); // Ensure master employee data is loaded
 
         if (masterEmployeesData.length === 0) {
-            nonParticipantsMessage.textContent = "Master Employee data is not available. Cannot generate non-participants report.";
+            nonParticipantsMessage.textContent = 'Master Employee data not loaded. Cannot generate report.';
             nonParticipantsMessage.style.display = 'block';
-            console.warn('Master Employees data is empty, cannot proceed.');
             return;
         }
 
-        const allMasterEmployeeCodes = new Set(masterEmployeesData.map(emp => String(emp['Employee Code']).trim().toLowerCase()));
-        const participantCodes = getParticipantEmployeeCodes(); // Get participant codes based on selected month
+        const participantCodes = getParticipantEmployeeCodes(allCanvassingDataFromScript);
+        console.log('Participant Codes:', participantCodes);
 
-        const nonParticipants = masterEmployeesData.filter(masterEmp => {
-            const employeeCode = String(masterEmp['Employee Code']).trim().toLowerCase();
-            return !participantCodes.has(employeeCode);
-        });
-        console.log('Number of non-participants found:', nonParticipants.length);
+        const nonParticipants = masterEmployeesData.filter(emp =>
+            emp['Employee Code'] && !participantCodes.includes(emp['Employee Code'])
+        );
+        
+        console.log('Non-Participants:', nonParticipants);
+
+        if (nonParticipants.length === 0) {
+            nonParticipantsMessage.textContent = 'All employees have participated in activities based on current data!';
+            nonParticipantsMessage.style.display = 'block';
+            return;
+        }
 
         displayNonParticipants(nonParticipants);
-
-        if (nonParticipants.length === 0) {
-            nonParticipantsMessage.textContent = "All master employees have participated for the selected period!";
-            nonParticipantsMessage.style.display = 'block';
-            nonParticipantsDisplay.style.display = 'none';
-        } else {
-            nonParticipantsDisplay.style.display = 'block';
-        }
-        console.log('Finished generating and displaying report.');
     }
 
-    // Function to display non-participants in the table
     function displayNonParticipants(nonParticipants) {
-        nonParticipantsTableBody.innerHTML = ''; // Clear previous entries
-        if (nonParticipants.length === 0) {
-            return;
-        }
-
-        nonParticipants.forEach((employee, index) => {
+        nonParticipantsTableBody.innerHTML = ''; // Clear existing rows
+        let slNo = 1;
+        nonParticipants.forEach(employee => {
             const row = nonParticipantsTableBody.insertRow();
-            row.insertCell(0).textContent = index + 1; // SL.No.
-            // These lines should now correctly map because parseCSV is fixing the object keys
-            row.insertCell(1).textContent = employee['Employee Code'] || '';
-            row.insertCell(2).textContent = employee['Employee Name'] || '';
-            row.insertCell(3).textContent = employee['Division'] || '';
-            row.insertCell(4).textContent = employee['Designation'] || '';
+            row.insertCell().textContent = slNo++;
+            row.insertCell().textContent = employee['Employee Code'] || 'N/A';
+            row.insertCell().textContent = employee['Employee Name'] || 'N/A';
+            row.insertCell().textContent = employee['Division'] || 'N/A'; // Assuming 'Division' is a header in master data
+            row.insertCell().textContent = employee['Designation'] || 'N/A';
+            row.insertCell().textContent = 'No'; // Visit Participation is always 'No' for non-participants
         });
     }
 
-    // Handle CSV download
+    // Function to download non-participants report as CSV
     if (downloadNonParticipantsReportBtn) {
         downloadNonParticipantsReportBtn.onclick = function() {
-            if (nonParticipantsTableBody.rows.length === 0) {
-                alert("No non-participating employees to download.");
+            // Get data from the currently displayed table
+            const rows = nonParticipantsTableBody.querySelectorAll('tr');
+            if (rows.length === 0) {
+                alert("No data to download.");
                 return;
             }
 
-            const nonParticipantsData = [];
-            // Get data from the displayed table
-            for (let i = 0; i < nonParticipantsTableBody.rows.length; i++) {
-                const row = nonParticipantsTableBody.rows[i];
-                nonParticipantsData.push({
-                    'SL.No.': row.cells[0].textContent,
-                    'Employee Code': row.cells[1].textContent,
-                    'Employee Name': row.cells[2].textContent,
-                    'Division': row.cells[3].textContent,
-                    'Designation': row.cells[4].textContent
-                });
-            }
+            const csvHeaders = [
+                'SL.No.', 'Employee Code', 'Employee Name', 'Division', 'Designation', 'Visit Participation'
+            ];
+            const csvRows = [];
 
-            const csvHeaders = ['SL.No.', 'Employee Code', 'Employee Name', 'Division', 'Designation'];
-            const csvRows = nonParticipantsData.map(row => csvHeaders.map(header => {
-                const value = row[header];
-                // Handle commas and quotes in CSV fields
-                const stringValue = String(value || '').replace(/"/g, '""');
-                return `"${stringValue}"`;
-            }).join(','));
+            rows.forEach(row => {
+                const rowData = [];
+                row.querySelectorAll('td').forEach(cell => {
+                    rowData.push(cell.textContent);
+                });
+                csvRows.push(rowData.map(value => {
+                    // Escape double quotes by doubling them and enclose in quotes
+                    const stringValue = String(value || '').replace(/"/g, '""');
+                    return `"${stringValue}"`;
+                }).join(','));
+            });
 
             const csvContent = [csvHeaders.join(','), ...csvRows].join('\n');
 
