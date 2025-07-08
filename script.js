@@ -28,6 +28,1813 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function checkAndSetAccess() {
         const enteredPassword = secretPasswordInput.value;
+        passwordErrorMessage.style.display = 'none'; // Hide any previous error
+
+        if (enteredPassword === ACCESS_PASSWORD_FULL) {
+            currentAccessLevel = 'full';
+            accessDeniedOverlay.style.display = 'none';
+            dashboardContent.style.display = 'block';
+            enableFullAccessFeatures();
+            processData(); // Proceed with loading data
+            showTab('allBranchSnapshotTabBtn'); // Show default tab
+        } else if (enteredPassword === ACCESS_PASSWORD_LIMITED) {
+            currentAccessLevel = 'limited';
+            accessDeniedOverlay.style.display = 'none';
+            dashboardContent.style.display = 'block';
+            enableLimitedAccessFeatures();
+            processData(); // Proceed with loading data
+            showTab('allBranchSnapshotTabBtn'); // Show default tab
+        } else {
+            passwordErrorMessage.textContent = 'Incorrect password. Please try again.';
+            passwordErrorMessage.style.display = 'block';
+        }
+    }
+
+    function enableFullAccessFeatures() {
+        // Enable all features for full access
+        if (downloadOverallStaffPerformanceReportBtn) downloadOverallStaffPerformanceReportBtn.style.display = 'inline-block';
+        if (detailedCustomerViewTabBtn) detailedCustomerViewTabBtn.style.display = 'inline-block';
+        if (viewAllEntriesButton) viewAllEntriesButton.style.display = 'inline-block';
+        const employeeManagementTabBtn = document.getElementById('employeeManagementTabBtn');
+        if (employeeManagementTabBtn) employeeManagementTabBtn.style.display = 'inline-block';
+        const nonParticipantReportTabBtn = document.getElementById('nonParticipatingEmployeesSection');
+         if (nonParticipantReportTabBtn) nonParticipantReportTabBtn.style.display = 'block'; // Make sure the section is visible for full access
+    }
+
+    function enableLimitedAccessFeatures() {
+        // Enable only view-related features for limited access
+        if (downloadOverallStaffPerformanceReportBtn) downloadOverallStaffPerformanceReportBtn.style.display = 'none'; // Hide download
+        if (detailedCustomerViewTabBtn) detailedCustomerViewTabBtn.style.display = 'inline-block';
+        if (viewAllEntriesButton) viewAllEntriesButton.style.display = 'none'; // Hide detailed view button
+        const employeeManagementTabBtn = document.getElementById('employeeManagementTabBtn');
+        if (employeeManagementTabBtn) employeeManagementTabBtn.style.display = 'none'; // Hide employee management
+        const nonParticipantReportTabBtn = document.getElementById('nonParticipatingEmployeesSection');
+         if (nonParticipantReportTabBtn) nonParticipantReportTabBtn.style.display = 'block'; // Make sure the section is visible for limited access
+    }
+    // --- END: TWO-TIERED FRONT-END PASSWORD PROTECTION ---
+
+
+    // --- Global Variables and Constants ---
+    const GOOGLE_SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR_sB3jD-r04hL54L199Yn21234567890/pub?output=csv';
+    const PREDEFINED_BRANCHES = ["Kochi", "Thrissur", "Calicut", "Trivandrum", "Kannur"]; // Define your branches
+
+    // Header Mappings (adjust these to match your CSV headers exactly)
+    const HEADER_TIMESTAMP = 'Timestamp';
+    const HEADER_BRANCH_NAME = 'Branch Name';
+    const HEADER_EMPLOYEE_NAME = 'Employee Name';
+    const HEADER_EMPLOYEE_CODE = 'Employee Code';
+    const HEADER_DESIGNATION = 'Designation';
+    const HEADER_ACTIVITY_TYPE = 'Activity Type';
+    const HEADER_TYPE_OF_CUSTOMER = 'Type of Customer';
+    const HEADER_R_LEAD_SOURCE = 'R - Lead Source';
+    const HEADER_HOW_CONTACTED = 'How Contacted';
+    const HEADER_PROSPECT_STATUS = 'Prospect Status';
+    const HEADER_PROSPECT_NAME = 'Prospect Name';
+    const HEADER_PHONE_NUMBER_WHATSAPP = 'Phone Number(Whatsapp)'; // Keeping user's provided typo
+    const HEADER_ADDRESS = 'Address';
+    const HEADER_PROFESSION = 'Profession';
+    const HEADER_DOB_WD = 'DOB/WD';
+    const HEADER_PRODUCT_INTERESTED = 'Product Interested'; // Keeping user's provided typo
+    const HEADER_REMARKS = 'Remarks';
+    const HEADER_NEXT_FOLLOW_UP_DATE = 'Next Follow-up Date';
+    const HEADER_RELATION_WITH_STAFF = 'Relation With Staff';
+
+    // NEW: Customer Detail Headers as provided by user
+    const HEADER_FAMILY_DETAILS_1 = 'Family Details -1 Name of wife/Husband';
+    const HEADER_FAMILY_DETAILS_2 = 'Family Details -2 Job of wife/Husband';
+    const HEADER_FAMILY_DETAILS_3 = 'Family Details -3 Names of Children';
+    const HEADER_FAMILY_DETAILS_4 = 'Family Details -4 Details of Children';
+    const HEADER_PROFILE_OF_CUSTOMER = 'Profile of Customer';
+
+
+    // Core Display and Status Elements
+    const reportDisplay = document.getElementById('reportDisplay');
+    const messageContainer = document.getElementById('messageContainer');
+    const messageElement = document.getElementById('message');
+
+    // Filter Elements
+    const monthSelect = document.getElementById('monthSelect');
+    const branchSelect = document.getElementById('branchSelect');
+    const employeeSelect = document.getElementById('employeeSelect');
+    const employeeFilterPanel = document.getElementById('employeeFilterPanel'); // Panel containing employee dropdown
+
+    // Customer View Filter Elements
+    const customerViewMonthSelect = document.getElementById('customerViewMonthSelect');
+    const customerViewBranchSelect = document.getElementById('customerViewBranchSelect');
+    const customerViewEmployeeSelect = document.getElementById('customerViewEmployeeSelect');
+    const detailedCustomerReportTableBody = document.getElementById('detailedCustomerReportTable').querySelector('tbody');
+    const customerDetailsContent = document.getElementById('customerDetailsContent'); // The div that shows individual customer details
+
+    // Report Section References
+    const reportsSection = document.getElementById('reportsSection');
+    const detailedCustomerViewSection = document.getElementById('detailedCustomerViewSection');
+    const employeeManagementSection = document.getElementById('employeeManagementSection');
+    const nonParticipatingEmployeesSection = document.getElementById('nonParticipatingEmployeesSection'); // Added for the Non-Participants Report section
+
+    // Report Tab Buttons
+    const allBranchSnapshotTabBtn = document.getElementById('allBranchSnapshotTabBtn');
+    const allStaffOverallPerformanceTabBtn = document.getElementById('allStaffOverallPerformanceTabBtn');
+    const nonParticipatingBranchesTabBtn = document.getElementById('nonParticipatingBranchesTabBtn');
+    const branchPerformanceTabBtn = document.getElementById('branchPerformanceTabBtn');
+    const detailedCustomerViewTabBtn = document.getElementById('detailedCustomerViewTabBtn');
+    const employeeManagementTabBtn = document.getElementById('employeeManagementTabBtn');
+    const nonParticipantReportTabBtn = document.getElementById('nonParticipantReportTabBtn'); // The button for the Non-Participant Report
+
+
+    // View Option Buttons (within reportsSection)
+    const viewOverallStaffPerformanceBtn = document.getElementById('viewOverallStaffPerformanceBtn');
+    const viewBranchPerformanceBtn = document.getElementById('viewBranchPerformanceBtn');
+    const viewEmployeeSummaryBtn = document.getElementById('viewEmployeeSummaryBtn');
+    const viewStaffParticipationBtn = document.getElementById('viewStaffParticipationBtn');
+    const viewBranchVisitLeaderboardBtn = document.getElementById('viewBranchVisitLeaderboardBtn');
+    const viewBranchCallLeaderboardBtn = document.getElementById('viewBranchCallLeaderboardBtn');
+    const viewDetailedCustomerReportBtn = document.getElementById('viewDetailedCustomerReportBtn');
+
+
+    // Employee Management Elements
+    const addEmployeeForm = document.getElementById('addEmployeeForm');
+    const employeeCodeInput = document.getElementById('employeeCodeInput');
+    const employeeNameInput = document.getElementById('employeeNameInput');
+    const employeeBranchNameInput = document.getElementById('employeeBranchNameInput');
+    const employeeDesignationInput = document.getElementById('employeeDesignationInput');
+    const employeeListTableBody = document.getElementById('employeeListTableBody');
+    const employeeManagementMessage = document.getElementById('employeeManagementMessage');
+    const bulkAddEmployeeForm = document.getElementById('bulkAddEmployeeForm');
+    const bulkEmployeeBranchNameInput = document.getElementById('bulkEmployeeBranchNameInput');
+    const bulkEmployeeDetailsTextarea = document.getElementById('bulkEmployeeDetailsTextarea');
+
+    // Global variables to store fetched data
+    let allCanvassingData = []; // Raw activity data from Form Responses 2
+    let allUniqueBranches = []; // Will be populated from PREDEFINED_BRANCHES
+    let allUniqueEmployees = []; // Employee codes from Canvassing Data
+    let employeeCodeToNameMap = {}; // {code: name} from Canvassing Data
+    let employeeCodeToDesignationMap = {}; // {code: designation} from Canvassing Data
+    let selectedBranchEntries = []; // Activity entries filtered by selected branch
+    let selectedEmployeeCodeEntries = []; // Activity entries filtered by selected employee
+
+    // Define targets for performance calculation
+    const TARGETS = {
+        'Branch Managerr': { 'Visit': 10, 'Call': 50, 'Reference': 10, 'New Customer Leads': 20 },
+        'Seniors': { 'Visit': 15, 'Call': 50, 'Reference': 10, 'New Customer Leads': 20 },
+        'Investment Staff': { 'Visit': 15, 'Call': 50, 'Reference': 10, 'New Customer Leads': 20 },
+        'Default': { 'Visit': 5, 'Call': 50, 'Reference': 10, 'New Customer Leads': 20 } // Fallback
+    };
+
+
+    // --- Utility Functions ---
+
+    function displayMessage(msg, type = 'info') {
+        messageElement.textContent = msg;
+        messageElement.className = `message ${type}`; // Apply class for styling
+        messageContainer.style.display = 'block';
+        setTimeout(() => {
+            messageContainer.style.display = 'none';
+        }, 5000); // Hide after 5 seconds
+    }
+
+    function displayEmployeeManagementMessage(msg, isError = false) {
+        employeeManagementMessage.textContent = msg;
+        employeeManagementMessage.className = `message ${isError ? 'error' : 'success'}`;
+        employeeManagementMessage.style.display = 'block';
+        setTimeout(() => {
+            employeeManagementMessage.style.display = 'none';
+        }, 5000);
+    }
+
+    function populateDropdown(dropdownElement, items, addSelectOption = true) {
+        dropdownElement.innerHTML = ''; // Clear existing options
+        if (addSelectOption) {
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = '-- Select --';
+            dropdownElement.appendChild(defaultOption);
+        }
+        items.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item;
+            option.textContent = item;
+            dropdownElement.appendChild(option);
+        });
+    }
+
+    // Function to parse CSV data
+    async function parseCsv(url) {
+        const response = await fetch(url);
+        const csvText = await response.text();
+        const lines = csvText.split('\n').filter(line => line.trim() !== '');
+        const headers = lines[0].split(',').map(header => header.trim().replace(/"/g, '')); // Clean headers
+        const data = [];
+        for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',').map(value => value.trim().replace(/"/g, '')); // Clean values
+            if (values.length === headers.length) {
+                let row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index];
+                });
+                data.push(row);
+            }
+        }
+        return data;
+    }
+
+    // Helper to format date for display
+    function formatDate(dateString) {
+        if (!dateString) return 'N/A';
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) { // Check for "Invalid Date"
+                // Try parsing with a different format if the direct parse fails, e.g., DD-MM-YYYY
+                const parts = dateString.split(/[-./]/);
+                if (parts.length === 3) {
+                    const d = parseInt(parts[0], 10);
+                    const m = parseInt(parts[1], 10) - 1; // Month is 0-indexed
+                    const y = parseInt(parts[2], 10);
+                    const altDate = new Date(y, m, d);
+                    if (!isNaN(altDate.getTime())) {
+                        return altDate.toLocaleDateString('en-GB'); // Or 'en-CA' for YYYY-MM-DD
+                    }
+                }
+                return dateString; // Return original if cannot parse reliably
+            }
+            return date.toLocaleDateString('en-GB'); // Adjust locale as needed (e.g., 'en-US', 'en-GB')
+        } catch (e) {
+            console.error("Error formatting date:", dateString, e);
+            return dateString; // Return original string on error
+        }
+    }
+
+
+    // Function to filter data by selected month
+    function filterDataByMonth(data, selectedMonthValue) {
+        if (!selectedMonthValue || selectedMonthValue === '') {
+            return data; // Return all data if no month is selected
+        }
+
+        const [selectedMonth, selectedYear] = selectedMonthValue.split('-'); // e.g., "07-2025" -> ["07", "2025"]
+        const monthIndex = parseInt(selectedMonth, 10) - 1; // Convert to 0-indexed month
+        const year = parseInt(selectedYear, 10);
+
+        return data.filter(entry => {
+            if (!entry[HEADER_TIMESTAMP]) {
+                return false; // Exclude entries without a timestamp
+            }
+            const timestampValue = entry[HEADER_TIMESTAMP];
+            let entryDate;
+            try {
+                entryDate = new Date(timestampValue);
+            } catch (e) {
+                console.warn(`Could not parse date string: ${timestampValue}`, e);
+                return false;
+            }
+
+            // --- ADDED HERE FOR DEBUGGING TIMESTAMP ISSUES ---
+            // If JavaScript cannot understand the timestamp, it creates an "Invalid Date".
+            // This checks for that and prints a warning to your browser's console.
+            if (isNaN(entryDate.getTime())) {
+                console.warn(`Warning: Timestamp parsing failed for entry with value: '${timestampValue}'. This entry will be excluded from month filtering.`);
+                return false; // Exclude entries that have an invalid date
+            }
+            // --- END OF NEW CODE ---
+
+            // Only include entries where the month and year match the selected ones
+            return entryDate.getMonth() === monthIndex && entryDate.getFullYear() === year;
+        });
+    }
+
+    // Function to populate month dropdown with last 12 months
+    function populateMonthDropdowns() {
+        const today = new Date();
+        const months = [];
+        for (let i = 0; i < 12; i++) {
+            const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            const monthName = date.toLocaleString('default', { month: 'long' });
+            months.push({ value: `${month}-${year}`, text: `${monthName} ${year}` });
+        }
+        populateDropdown(monthSelect, months, true);
+        populateDropdown(customerViewMonthSelect, months, true);
+        // Set default selected month to current month if present
+        const currentMonthValue = `${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getFullYear()}`;
+        if (months.some(m => m.value === currentMonthValue)) {
+            monthSelect.value = currentMonthValue;
+            customerViewMonthSelect.value = currentMonthValue;
+        }
+    }
+
+
+    // Function to calculate total activity from a set of activity entries based on Activity Type
+    function calculateTotalActivity(entries) {
+        const totalActivity = {
+            'Visit': 0,
+            'Call': 0,
+            'Reference': 0,
+            'New Customer Leads': 0
+        }; // Initialize counters
+        const productInterests = new Set(); // To collect unique product interests
+
+        console.log('Calculating total activity for entries:', entries.length); // Log entries being processed
+
+        entries.forEach((entry, index) => {
+            let activityType = entry[HEADER_ACTIVITY_TYPE];
+            let typeOfCustomer = entry[HEADER_TYPE_OF_CUSTOMER];
+            let productInterested = entry[HEADER_PRODUCT_INTERESTED]; // Get product interested
+
+            // --- Start Entry ${index + 1} Debug ---
+            // console.log(`Processing entry ${index + 1}:`, entry);
+            // console.log(`Activity Type: ${activityType}, Type of Customer: ${typeOfCustomer}, Product Interested: ${productInterested}`);
+            // --- End Entry ${index + 1} Debug ---
+
+
+            if (totalActivity.hasOwnProperty(activityType)) {
+                totalActivity[activityType]++;
+            } else if (activityType) {
+                // If the activity type is not one of the main ones but exists, you might want to count it generically
+                // console.warn(`Unknown activity type encountered: ${activityType}`);
+                // totalActivity['Other'] = (totalActivity['Other'] || 0) + 1;
+            }
+
+            if (productInterested && productInterested.trim() !== '') {
+                productInterests.add(productInterested.trim());
+            }
+        });
+        console.log('Calculated Total Activity Final:', totalActivity);
+        // Return both total activities and product interests
+        return { totalActivity, productInterests: [...productInterests] };
+    }
+
+
+    // Function to calculate performance percentage
+    function calculatePerformance(actual, target) {
+        const performance = {};
+        for (const metric in target) {
+            if (target.hasOwnProperty(metric)) {
+                const actualValue = actual[metric] || 0;
+                const targetValue = target[metric];
+                if (targetValue > 0) {
+                    performance[metric] = (actualValue / targetValue) * 100;
+                } else {
+                    performance[metric] = 0; // Avoid division by zero if target is 0
+                }
+            }
+        }
+        return performance;
+    }
+
+
+    // --- Report Rendering Functions ---
+
+    // Render All Branch Snapshot (now uses PREDEFINED_BRANCHES and checks for participation)
+    function renderAllBranchSnapshot() {
+        reportDisplay.innerHTML = '<h2>All Branch Snapshot</h2>';
+        const table = document.createElement('table');
+        table.className = 'all-branch-snapshot-table';
+        const thead = table.createTHead();
+        const headerRow = thead.insertRow();
+        const headers = ['Branch Name', 'Employees with Activity', 'Total Visits', 'Total Calls', 'Total References', 'Total New Customer Leads'];
+        headers.forEach(text => {
+            const th = document.createElement('th');
+            th.textContent = text;
+            headerRow.appendChild(th);
+        });
+        const tbody = table.createTBody();
+
+        // Get selected month value
+        const selectedMonthValue = monthSelect.value;
+        const filteredData = filterDataByMonth(allCanvassingData, selectedMonthValue);
+
+        PREDEFINED_BRANCHES.forEach(branch => {
+            const branchActivityEntries = filteredData.filter(entry => entry[HEADER_BRANCH_NAME] === branch);
+            const employeesWithActivityInBranch = new Set(branchActivityEntries.map(entry => entry[HEADER_EMPLOYEE_CODE]));
+            const { totalActivity } = calculateTotalActivity(branchActivityEntries);
+
+            const row = tbody.insertRow();
+            row.insertCell().textContent = branch;
+            row.insertCell().textContent = employeesWithActivityInBranch.size;
+            row.insertCell().textContent = totalActivity['Visit'];
+            row.insertCell().textContent = totalActivity['Call'];
+            row.insertCell().textContent = totalActivity['Reference'];
+            row.insertCell().textContent = totalActivity['New Customer Leads'];
+        });
+
+        reportDisplay.appendChild(table);
+    }
+
+    // Render Overall Staff Performance Report
+    function renderOverallStaffPerformanceReport() {
+        reportDisplay.innerHTML = '<h2>Overall Staff Performance</h2>';
+        const tableContainer = document.createElement('div');
+        tableContainer.className = 'data-table-container'; // For horizontal scrolling
+        const table = document.createElement('table');
+        table.className = 'performance-table';
+        const thead = table.createTHead();
+
+        let headerRow = thead.insertRow();
+        // Main Headers
+        headerRow.insertCell().textContent = 'Employee Name';
+        headerRow.insertCell().textContent = 'Branch Name';
+        headerRow.insertCell().textContent = 'Designation';
+        // Define metrics for the performance table
+        const metrics = ['Visit', 'Call', 'Reference', 'New Customer Leads'];
+        metrics.forEach(metric => {
+            const th = document.createElement('th');
+            th.colSpan = 3; // 'Actual', 'Target', '%'
+            th.textContent = metric;
+            headerRow.appendChild(th);
+        });
+
+        // Sub-headers
+        headerRow = thead.insertRow(); // New row for sub-headers
+        headerRow.insertCell(); // Empty cell for Employee Name
+        headerRow.insertCell(); // Empty cell for Branch Name
+        headerRow.insertCell(); // Empty cell for Designation
+        metrics.forEach(() => {
+            ['Act', 'Tgt', '%'].forEach(subHeader => {
+                const th = document.createElement('th');
+                th.textContent = subHeader;
+                headerRow.appendChild(th);
+            });
+        });
+
+        const tbody = table.createTBody();
+
+        const selectedMonthValue = monthSelect.value;
+        const filteredData = filterDataByMonth(allCanvassingData, selectedMonthValue);
+
+        // Get all unique employee codes from the canvassing data, even if they have no activity this month
+        // This ensures all employees in the system are listed, even if they are non-participants for the month.
+        const allEmployeesThisMonth = new Set(filteredData.map(entry => entry[HEADER_EMPLOYEE_CODE]));
+        // Also include employees from the global employeeCodeToNameMap to ensure all registered employees appear
+        Object.keys(employeeCodeToNameMap).forEach(code => allEmployeesThisMonth.add(code));
+
+
+        const sortedEmployees = [...allEmployeesThisMonth].sort((codeA, codeB) => {
+            const nameA = employeeCodeToNameMap[codeA] || codeA;
+            const nameB = employeeCodeToNameMap[codeB] || codeB;
+            return nameA.localeCompare(nameB);
+        });
+
+
+        sortedEmployees.forEach(employeeCode => {
+            const employeeName = employeeCodeToNameMap[employeeCode] || employeeCode;
+            const designation = employeeCodeToDesignationMap[employeeCode] || 'N/A';
+            const branchName = filteredData.find(entry => entry[HEADER_EMPLOYEE_CODE] === employeeCode)?.[HEADER_BRANCH_NAME] || 'N/A'; // Get branch from an activity entry if available
+
+            const employeeActivities = filteredData.filter(entry => entry[HEADER_EMPLOYEE_CODE] === employeeCode);
+            const { totalActivity } = calculateTotalActivity(employeeActivities);
+            const targets = TARGETS[designation] || TARGETS['Default'];
+            const performance = calculatePerformance(totalActivity, targets);
+
+            const row = tbody.insertRow();
+            row.insertCell().textContent = employeeName;
+            row.insertCell().textContent = branchName;
+            row.insertCell().textContent = designation;
+
+            metrics.forEach(metric => {
+                const actualValue = totalActivity[metric] || 0;
+                const targetValue = targets[metric];
+                let percentValue = performance[metric];
+
+                let displayPercent;
+                let progressBarClass = '';
+
+                if (isNaN(percentValue) || targetValue === 0) {
+                    displayPercent = 'N/A';
+                    progressBarClass = 'no-activity'; // Grey for N/A or no target
+                } else {
+                    displayPercent = `${Math.round(percentValue)}%`;
+                    if (percentValue >= 100) {
+                        progressBarClass = 'success';
+                    } else if (percentValue >= 75) {
+                        progressBarClass = 'warning-high';
+                    } else if (percentValue >= 50) {
+                        progressBarClass = 'warning-medium';
+                    } else if (percentValue >= 25) {
+                        progressBarClass = 'warning-low';
+                    } else {
+                        progressBarClass = 'danger';
+                    }
+                }
+                if (actualValue === 0 && targetValue > 0) {
+                     displayPercent = '0%';
+                     progressBarClass = 'danger'; // Explicitly red if 0 actual vs positive target
+                }
+
+
+                row.insertCell().textContent = actualValue;
+                row.insertCell().textContent = targetValue;
+                const percentCell = row.insertCell();
+                const progressWidth = Math.min(100, Math.max(0, Math.round(percentValue))); // Clamp between 0 and 100
+                percentCell.innerHTML = `
+                    <div class="progress-bar-container-small">
+                        <div class="progress-bar ${progressBarClass}" style="width: ${progressWidth === 0 && displayPercent !== 'N/A' ? '30px' : progressWidth}%">
+                            ${displayPercent}
+                        </div>
+                    </div>
+                `;
+            });
+        });
+
+        tableContainer.appendChild(table);
+        reportDisplay.appendChild(tableContainer);
+    }
+
+    // --- NEW: Function to generate and download the Overall Staff Performance Report as CSV ---
+    function downloadOverallStaffPerformanceReportCSV() {
+        const selectedMonthValue = monthSelect.value;
+        const filteredData = filterDataByMonth(allCanvassingData, selectedMonthValue);
+
+        // Get all employees who have had activity in the selected month
+        const employeesWithActivityThisMonth = [...new Set(filteredData
+            .map(entry => entry[HEADER_EMPLOYEE_CODE]))].sort((codeA, codeB) => {
+                const nameA = employeeCodeToNameMap[codeA] || codeA;
+                const nameB = employeeCodeToNameMap[codeB] || codeB;
+                return nameA.localeCompare(nameB);
+            });
+
+        if (employeesWithActivityThisMonth.length === 0) {
+            displayMessage('No staff activity found for the selected month to generate report.', 'info');
+            return;
+        }
+
+        const csvRows = [];
+        // Add report title and month
+        csvRows.push(`"Overall Staff Performance Report for ${monthSelect.options[monthSelect.selectedIndex].text}"`);
+        csvRows.push(''); // Empty row for spacing
+
+        // Define headers for the CSV
+        const headers = ['Employee Name', 'Branch Name', 'Designation'];
+        const metrics = ['Visit', 'Call', 'Reference', 'New Customer Leads'];
+        metrics.forEach(metric => {
+            headers.push(`${metric} (Actual)`);
+            headers.push(`${metric} (Target)`);
+            headers.push(`${metric} (% Achieved)`);
+        });
+        csvRows.push(headers.map(h => `"${h.replace(/"/g, '""')}"`).join(',')); // Quote headers
+
+        employeesWithActivityThisMonth.forEach(employeeCode => {
+            const employeeName = employeeCodeToNameMap[employeeCode] || employeeCode;
+            const designation = employeeCodeToDesignationMap[employeeCode] || 'N/A';
+            const branchName = filteredData.find(entry => entry[HEADER_EMPLOYEE_CODE] === employeeCode)?.[HEADER_BRANCH_NAME] || 'N/A';
+
+            const employeeActivities = filteredData.filter(entry => entry[HEADER_EMPLOYEE_CODE] === employeeCode);
+            const { totalActivity } = calculateTotalActivity(employeeActivities);
+            const targets = TARGETS[designation] || TARGETS['Default'];
+            const performance = calculatePerformance(totalActivity, targets);
+
+            const rowData = [employeeName, branchName, designation];
+            metrics.forEach(metric => {
+                const actualValue = totalActivity[metric] || 0;
+                const targetValue = targets[metric];
+                let percentValue = performance[metric];
+                let displayPercent;
+
+                if (isNaN(percentValue) || targetValue === 0) {
+                    displayPercent = 'N/A';
+                } else {
+                    displayPercent = `${Math.round(percentValue)}%`;
+                }
+                if (actualValue === 0 && targetValue > 0) {
+                     displayPercent = '0%';
+                }
+
+                rowData.push(actualValue, targetValue, displayPercent);
+            });
+            csvRows.push(rowData.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','));
+        });
+
+        const csvString = csvRows.join('\n');
+        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `Overall_Staff_Performance_Report_${selectedMonthValue}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            // Fallback for browsers that don't support download attribute
+            displayMessage("Your browser does not support automatic downloads. Please copy the data manually.", 'error');
+            // Optionally display the CSV data for manual copying
+            console.log(csvString);
+        }
+    }
+    // --- END NEW ---
+
+
+    // Render Non-Participating Employees Report
+    function renderNonParticipatingBranches() {
+        const nonParticipantsTableBody = document.getElementById('nonParticipantsTable').querySelector('tbody');
+        const nonParticipantsMessage = document.getElementById('nonParticipantsMessage');
+        nonParticipantsTableBody.innerHTML = ''; // Clear previous entries
+        nonParticipantsMessage.style.display = 'none';
+
+        const selectedMonthValue = monthSelect.value;
+        const filteredCanvassingData = filterDataByMonth(allCanvassingData, selectedMonthValue);
+
+        // Get all employee codes who have had *any* activity (visits or otherwise) in the selected month
+        const employeesWithActivityThisMonth = new Set(
+            filteredCanvassingData
+                .filter(entry => entry[HEADER_ACTIVITY_TYPE] === 'Visit') // Filter specifically for visits
+                .map(entry => entry[HEADER_EMPLOYEE_CODE])
+        );
+
+        const nonParticipatingEmployees = [];
+        // Iterate through all employees in the master list (employeeCodeToNameMap)
+        for (const employeeCode in employeeCodeToNameMap) {
+            if (employeeCodeToNameMap.hasOwnProperty(employeeCode)) {
+                // If the employee code is NOT found in the set of employees with activity this month, they are non-participating
+                if (!employeesWithActivityThisMonth.has(employeeCode)) {
+                    nonParticipatingEmployees.push({
+                        code: employeeCode,
+                        name: employeeCodeToNameMap[employeeCode],
+                        designation: employeeCodeToDesignationMap[employeeCode] || 'N/A',
+                        branch: filteredCanvassingData.find(entry => entry[HEADER_EMPLOYEE_CODE] === employeeCode)?.[HEADER_BRANCH_NAME] || 'N/A' // Attempt to get branch from any existing data
+                    });
+                }
+            }
+        }
+
+        // Sort non-participating employees by name
+        nonParticipatingEmployees.sort((a, b) => a.name.localeCompare(b.name));
+
+        if (nonParticipatingEmployees.length === 0) {
+            nonParticipantsMessage.textContent = `All employees have participated in the selected month (${monthSelect.options[monthSelect.selectedIndex].text}).`;
+            nonParticipantsMessage.className = 'message success';
+            nonParticipantsMessage.style.display = 'block';
+            document.getElementById('downloadNonParticipantsReportBtn').style.display = 'none'; // Hide download button if no non-participants
+            document.getElementById('nonParticipantsDisplay').style.display = 'none'; // Hide table display
+        } else {
+            let slNo = 1;
+            nonParticipatingEmployees.forEach(emp => {
+                const row = nonParticipantsTableBody.insertRow();
+                // Add the highlight class to the row for zero visits in the selected month
+                row.classList.add('zero-visits-highlight'); // ADDED CLASS FOR HIGHLIGHTING
+
+                row.insertCell().textContent = slNo++;
+                row.insertCell().textContent = emp.code;
+                row.insertCell().textContent = emp.name;
+                row.insertCell().textContent = emp.branch;
+                row.insertCell().textContent = emp.designation;
+            });
+            document.getElementById('downloadNonParticipantsReportBtn').style.display = 'block'; // Show download button
+            document.getElementById('nonParticipantsDisplay').style.display = 'block'; // Show table display
+        }
+    }
+
+
+    // Function to generate and download the Non-Participants Report as CSV
+    function downloadNonParticipantsReportCSV() {
+        const selectedMonthValue = monthSelect.value;
+        const filteredCanvassingData = filterDataByMonth(allCanvassingData, selectedMonthValue);
+
+        const employeesWithActivityThisMonth = new Set(
+            filteredCanvassingData
+                .filter(entry => entry[HEADER_ACTIVITY_TYPE] === 'Visit')
+                .map(entry => entry[HEADER_EMPLOYEE_CODE])
+        );
+
+        const nonParticipatingEmployees = [];
+        for (const employeeCode in employeeCodeToNameMap) {
+            if (employeeCodeToNameMap.hasOwnProperty(employeeCode)) {
+                if (!employeesWithActivityThisMonth.has(employeeCode)) {
+                    nonParticipatingEmployees.push({
+                        code: employeeCode,
+                        name: employeeCodeToNameMap[employeeCode],
+                        designation: employeeCodeToDesignationMap[employeeCode] || 'N/A',
+                        branch: filteredCanvassingData.find(entry => entry[HEADER_EMPLOYEE_CODE] === employeeCode)?.[HEADER_BRANCH_NAME] || 'N/A'
+                    });
+                }
+            }
+        }
+        nonParticipatingEmployees.sort((a, b) => a.name.localeCompare(b.name));
+
+        if (nonParticipatingEmployees.length === 0) {
+            displayMessage('No non-participating employees found for the selected month to download.', 'info');
+            return;
+        }
+
+        const csvRows = [];
+        csvRows.push(`"Non-Participating Employees Report for ${monthSelect.options[monthSelect.selectedIndex].text}"`);
+        csvRows.push(''); // Empty row for spacing
+
+        const headers = ['SL.No.', 'Employee Code', 'Employee Name', 'Division', 'Designation'];
+        csvRows.push(headers.map(h => `"${h.replace(/"/g, '""')}"`).join(','));
+
+        let slNo = 1;
+        nonParticipatingEmployees.forEach(emp => {
+            const rowData = [
+                slNo++,
+                emp.code,
+                emp.name,
+                emp.branch,
+                emp.designation
+            ];
+            csvRows.push(rowData.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','));
+        });
+
+        const csvString = csvRows.join('\n');
+        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `Non_Participating_Employees_Report_${selectedMonthValue}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            displayMessage("Your browser does not support automatic downloads. Please copy the data manually.", 'error');
+            console.log(csvString);
+        }
+    }
+
+
+    // Render Branch Performance Report
+    function renderBranchPerformanceReport() {
+        reportDisplay.innerHTML = '<h2>Branch Performance Report</h2>';
+        const tableContainer = document.createElement('div');
+        tableContainer.className = 'data-table-container';
+        const table = document.createElement('table');
+        table.className = 'performance-table';
+        const thead = table.createTHead();
+
+        let headerRow = thead.insertRow();
+        headerRow.insertCell().textContent = 'Branch Name';
+        const metrics = ['Visit', 'Call', 'Reference', 'New Customer Leads'];
+        metrics.forEach(metric => {
+            const th = document.createElement('th');
+            th.colSpan = 3; // 'Actual', 'Target', '%'
+            th.textContent = metric;
+            headerRow.appendChild(th);
+        });
+
+        headerRow = thead.insertRow();
+        headerRow.insertCell(); // Empty cell for Branch Name
+        metrics.forEach(() => {
+            ['Act', 'Tgt', '%'].forEach(subHeader => {
+                const th = document.createElement('th');
+                th.textContent = subHeader;
+                headerRow.appendChild(th);
+            });
+        });
+
+        const tbody = table.createTBody();
+
+        const selectedMonthValue = monthSelect.value;
+        const filteredData = filterDataByMonth(allCanvassingData, selectedMonthValue);
+
+        PREDEFINED_BRANCHES.forEach(branchName => {
+            const branchActivities = filteredData.filter(entry => entry[HEADER_BRANCH_NAME] === branchName);
+            const { totalActivity } = calculateTotalActivity(branchActivities);
+
+            // For branch performance, we might need an aggregated target.
+            // For simplicity, let's sum up individual employee targets for the branch,
+            // or use a predefined branch target if available. For now, using a placeholder/simplified aggregation.
+            const aggregatedBranchTargets = { 'Visit': 0, 'Call': 0, 'Reference': 0, 'New Customer Leads': 0 };
+
+            // Sum up targets of all employees belonging to this branch (active or not) for the selected month
+            // This assumes employeeCodeToDesignationMap holds all employees regardless of monthly activity
+            const employeesInBranchCodes = [...new Set(
+                [...filteredData.filter(entry => entry[HEADER_BRANCH_NAME] === branchName).map(entry => entry[HEADER_EMPLOYEE_CODE]),
+                 ...Object.keys(employeeCodeToNameMap).filter(code => employeeCodeToDesignationMap[code] && PREDEFINED_BRANCHES.includes(branchName) // Assuming employees are linked to branches somewhere or from master list
+                 )]
+            )];
+
+             employeesInBranchCodes.forEach(empCode => {
+                const designation = employeeCodeToDesignationMap[empCode];
+                if (designation && TARGETS[designation]) {
+                    for (const metric in TARGETS[designation]) {
+                        if (TARGETS[designation].hasOwnProperty(metric)) {
+                            aggregatedBranchTargets[metric] += TARGETS[designation][metric];
+                        }
+                    }
+                } else {
+                     // If designation not found, use default targets once per employee
+                     for (const metric in TARGETS['Default']) {
+                        if (TARGETS['Default'].hasOwnProperty(metric)) {
+                            aggregatedBranchTargets[metric] += TARGETS['Default'][metric];
+                        }
+                    }
+                }
+            });
+
+
+            const performance = calculatePerformance(totalActivity, aggregatedBranchTargets);
+
+            const row = tbody.insertRow();
+            row.insertCell().textContent = branchName;
+
+            metrics.forEach(metric => {
+                const actualValue = totalActivity[metric] || 0;
+                const targetValue = aggregatedBranchTargets[metric];
+                let percentValue = performance[metric];
+
+                let displayPercent;
+                let progressBarClass = '';
+
+                if (isNaN(percentValue) || targetValue === 0) {
+                    displayPercent = 'N/A';
+                    progressBarClass = 'no-activity';
+                } else {
+                    displayPercent = `${Math.round(percentValue)}%`;
+                    if (percentValue >= 100) {
+                        progressBarClass = 'success';
+                    } else if (percentValue >= 75) {
+                        progressBarClass = 'warning-high';
+                    } else if (percentValue >= 50) {
+                        progressBarClass = 'warning-medium';
+                    } else if (percentValue >= 25) {
+                        progressBarClass = 'warning-low';
+                    } else {
+                        progressBarClass = 'danger';
+                    }
+                }
+                if (actualValue === 0 && targetValue > 0) {
+                     displayPercent = '0%';
+                     progressBarClass = 'danger';
+                }
+
+                row.insertCell().textContent = actualValue;
+                row.insertCell().textContent = targetValue;
+                const percentCell = row.insertCell();
+                const progressWidth = Math.min(100, Math.max(0, Math.round(percentValue)));
+                percentCell.innerHTML = `
+                    <div class="progress-bar-container-small">
+                        <div class="progress-bar ${progressBarClass}" style="width: ${progressWidth === 0 && displayPercent !== 'N/A' ? '30px' : progressWidth}%">
+                            ${displayPercent}
+                        </div>
+                    </div>
+                `;
+            });
+        });
+
+        tableContainer.appendChild(table);
+        reportDisplay.appendChild(tableContainer);
+    }
+
+
+    // Render Employee Summary (d4.PNG style)
+    function renderEmployeeSummary(employeeActivities) {
+        reportDisplay.innerHTML = '<h2>Employee Summary</h2>';
+
+        if (employeeActivities.length === 0) {
+            reportDisplay.innerHTML += '<p>No activity found for the selected employee in the selected month.</p>';
+            return;
+        }
+
+        // Assuming all entries are for the same employee, get details from the first entry
+        const employeeCode = employeeActivities[0][HEADER_EMPLOYEE_CODE];
+        const employeeName = employeeCodeToNameMap[employeeCode] || employeeCode;
+        const branchName = employeeActivities[0][HEADER_BRANCH_NAME];
+        const designation = employeeCodeToDesignationMap[employeeCode] || 'N/A';
+
+        const { totalActivity, productInterests } = calculateTotalActivity(employeeActivities);
+        const targets = TARGETS[designation] || TARGETS['Default'];
+        const performance = calculatePerformance(totalActivity, targets);
+
+        const summaryHtml = `
+            <div class="employee-summary-header">
+                <h3>${employeeName} (${employeeCode})</h3>
+                <p>Branch: ${branchName} | Designation: ${designation}</p>
+            </div>
+            <div class="summary-details">
+                <div class="summary-card">
+                    <h4>Activity Summary</h4>
+                    <table class="summary-table">
+                        <thead>
+                            <tr><th>Metric</th><th>Actual</th><th>Target</th><th>% Achieved</th></tr>
+                        </thead>
+                        <tbody>
+                            ${Object.keys(targets).map(metric => {
+                                const actualValue = totalActivity[metric] || 0;
+                                const targetValue = targets[metric];
+                                let percentValue = performance[metric];
+                                let displayPercent;
+                                if (isNaN(percentValue) || targetValue === 0) {
+                                    displayPercent = 'N/A';
+                                } else {
+                                    displayPercent = `${Math.round(percentValue)}%`;
+                                }
+                                if (actualValue === 0 && targetValue > 0) {
+                                     displayPercent = '0%';
+                                }
+                                return `<tr><td>${metric}</td><td>${actualValue}</td><td>${targetValue}</td><td>${displayPercent}</td></tr>`;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="summary-card">
+                    <h4>Product Interests</h4>
+                    ${productInterests.length > 0 ?
+                        `<ul class="product-interest-list">
+                            ${productInterests.map(interest => `<li>${interest}</li>`).join('')}
+                        </ul>` : '<p>No specific product interests recorded.</p>'}
+                </div>
+
+                <div class="summary-card">
+                    <h4>Monthly Activity Breakdown</h4>
+                    <ul class="summary-list">
+                        ${employeeActivities.map((entry, index) => `
+                            <li>
+                                <span>${formatDate(entry[HEADER_TIMESTAMP])} - ${entry[HEADER_ACTIVITY_TYPE]}</span>
+                                <span>${entry[HEADER_PROSPECT_NAME] || 'N/A'}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            </div>
+        `;
+        reportDisplay.innerHTML += summaryHtml;
+
+         // Add download detailed entries CSV button
+        const downloadBtn = document.createElement('button');
+        downloadBtn.className = 'btn';
+        downloadBtn.textContent = `Download All Entries for ${employeeName} (CSV)`;
+        downloadBtn.style.marginTop = '20px';
+        downloadBtn.addEventListener('click', () => {
+            downloadEmployeeDetailedEntriesCSV(employeeActivities, employeeName);
+        });
+        reportDisplay.appendChild(downloadBtn);
+    }
+
+    // Function to download detailed employee entries as CSV
+    function downloadEmployeeDetailedEntriesCSV(employeeActivities, employeeName) {
+        const csvRows = [];
+        // Add a title to the CSV for clarity (you can remove this part)
+        csvRows.push(`"All Canvassing Entries for ${employeeName} (${monthSelect.options[monthSelect.selectedIndex].text})"`);
+
+        if (employeeActivities.length > 0) {
+            const entryHeaders = Object.keys(employeeActivities[0]);
+            csvRows.push(entryHeaders.map(h => `"${h.replace(/"/g, '""')}"`).join(',')); // Quote headers
+            employeeActivities.forEach(entry => {
+                const row = entryHeaders.map(header => {
+                    const cell = entry[header];
+                    const stringCell = String(cell || '');
+                    return `"${stringCell.replace(/"/g, '""')}"`;
+                }).join(',');
+                csvRows.push(row);
+            });
+        } else {
+            csvRows.push(`"No detailed entries available for this employee in the selected month."`);
+        }
+
+        const csvString = csvRows.join('\n');
+        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `${employeeName.replace(/\s+/g, '_')}_Summary_Report_${monthSelect.value}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            displayMessage("Your browser does not support automatic downloads. Please copy the data manually.", 'error');
+            console.log(csvString);
+        }
+    }
+
+
+    function renderLeaderboard(activityType) {
+        reportDisplay.innerHTML = `<h2>${activityType} Leaderboard</h2>`;
+        const tableContainer = document.createElement('div');
+        tableContainer.className = 'data-table-container';
+        const table = document.createElement('table');
+        table.className = 'data-table';
+        const thead = table.createTHead();
+        const headerRow = thead.insertRow();
+        ['Rank', 'Employee Name', 'Branch', 'Designation', `Total ${activityType}`].forEach(text => {
+            const th = document.createElement('th');
+            th.textContent = text;
+            headerRow.appendChild(th);
+        });
+        const tbody = table.createTBody();
+
+        const selectedMonthValue = monthSelect.value;
+        const filteredData = filterDataByMonth(allCanvassingData, selectedMonthValue);
+
+        // Aggregate activity by employee
+        const employeeActivityCounts = {};
+        filteredData.forEach(entry => {
+            const employeeCode = entry[HEADER_EMPLOYEE_CODE];
+            const currentActivityType = entry[HEADER_ACTIVITY_TYPE];
+            if (currentActivityType === activityType) {
+                employeeActivityCounts[employeeCode] = (employeeActivityCounts[employeeCode] || 0) + 1;
+            }
+        });
+
+        // Convert to array and sort for leaderboard
+        const leaderboardData = Object.keys(employeeActivityCounts)
+            .map(employeeCode => ({
+                code: employeeCode,
+                name: employeeCodeToNameMap[employeeCode] || employeeCode,
+                branch: filteredData.find(entry => entry[HEADER_EMPLOYEE_CODE] === employeeCode)?.[HEADER_BRANCH_NAME] || 'N/A',
+                designation: employeeCodeToDesignationMap[employeeCode] || 'N/A',
+                count: employeeActivityCounts[employeeCode]
+            }))
+            .sort((a, b) => b.count - a.count); // Sort descending by count
+
+        if (leaderboardData.length === 0) {
+            reportDisplay.innerHTML += `<p>No ${activityType} activity found for the selected month.</p>`;
+            return;
+        }
+
+        let rank = 1;
+        leaderboardData.forEach(emp => {
+            const row = tbody.insertRow();
+            row.insertCell().textContent = rank++;
+            row.insertCell().textContent = emp.name;
+            row.insertCell().textContent = emp.branch;
+            row.insertCell().textContent = emp.designation;
+            row.insertCell().textContent = emp.count;
+        });
+
+        tableContainer.appendChild(table);
+        reportDisplay.appendChild(tableContainer);
+    }
+
+
+    // Function to render Staff Participation Report
+    function renderStaffParticipationReport() {
+        reportDisplay.innerHTML = '<h2>Staff Participation Report</h2>';
+        const tableContainer = document.createElement('div');
+        tableContainer.className = 'data-table-container';
+        const table = document.createElement('table');
+        table.className = 'data-table';
+        const thead = table.createTHead();
+        const headerRow = thead.insertRow();
+        ['Employee Name', 'Branch', 'Designation', 'Participated (This Month)'].forEach(text => {
+            const th = document.createElement('th');
+            th.textContent = text;
+            headerRow.appendChild(th);
+        });
+        const tbody = table.createTBody();
+
+        const selectedMonthValue = monthSelect.value;
+        const filteredData = filterDataByMonth(allCanvassingData, selectedMonthValue);
+
+        // Prepare a map of all known employees and their participation status for the month
+        const employeeParticipation = {};
+        for (const code in employeeCodeToNameMap) {
+            if (employeeCodeToNameMap.hasOwnProperty(code)) {
+                employeeParticipation[code] = {
+                    name: employeeCodeToNameMap[code],
+                    branch: employeeCodeToNameMap[code] && Object.values(allCanvassingData).find(entry => entry[HEADER_EMPLOYEE_CODE] === code)?.[HEADER_BRANCH_NAME] || 'N/A',
+                    designation: employeeCodeToDesignationMap[code] || 'N/A',
+                    hasActivity: false // Default to no activity
+                };
+            }
+        }
+
+        // Mark employees with activity in the filtered data
+        filteredData.forEach(entry => {
+            const empCode = entry[HEADER_EMPLOYEE_CODE];
+            if (employeeParticipation[empCode]) {
+                employeeParticipation[empCode].hasActivity = true;
+            }
+        });
+
+        // Convert to array and sort
+        const sortedParticipation = Object.values(employeeParticipation).sort((a, b) => a.name.localeCompare(b.name));
+
+        if (sortedParticipation.length === 0) {
+            reportDisplay.innerHTML += '<p>No staff participation data available for the selected month.</p>';
+            return;
+        }
+
+        sortedParticipation.forEach(emp => {
+            const row = tbody.insertRow();
+            row.insertCell().textContent = emp.name;
+            row.insertCell().textContent = emp.branch;
+            row.insertCell().textContent = emp.designation;
+            row.insertCell().textContent = emp.hasActivity ? 'Yes' : 'No';
+            row.classList.add(emp.hasActivity ? 'participated' : 'non-participated'); // Add class for styling
+        });
+
+        tableContainer.appendChild(table);
+        reportDisplay.appendChild(tableContainer);
+    }
+
+
+    // Function to load and display the detailed customer report list
+    function loadDetailedCustomerReport() {
+        const selectedBranch = customerViewBranchSelect.value;
+        const selectedEmployeeCode = customerViewEmployeeSelect.value;
+        const selectedMonthValue = customerViewMonthSelect.value;
+
+        if (!selectedBranch || !selectedEmployeeCode || !selectedMonthValue) {
+            detailedCustomerReportTableBody.innerHTML = '<tr><td colspan="5">Please select a Branch, Employee, and Month to view customer data.</td></tr>';
+            // Clear previous customer details if filters are incomplete
+            customerDetailsContent.style.display = 'none';
+            return;
+        }
+
+        // Filter all canvassing data by selected branch, employee, and month
+        let filteredCustomerEntries = filterDataByMonth(allCanvassingData, selectedMonthValue);
+        filteredCustomerEntries = filteredCustomerEntries.filter(entry =>
+            entry[HEADER_BRANCH_NAME] === selectedBranch &&
+            entry[HEADER_EMPLOYEE_CODE] === selectedEmployeeCode
+        );
+
+        detailedCustomerReportTableBody.innerHTML = ''; // Clear previous entries
+
+        if (filteredCustomerEntries.length === 0) {
+            detailedCustomerReportTableBody.innerHTML = '<tr><td colspan="5">No customer entries found for the selected employee in this month.</td></tr>';
+            customerDetailsContent.style.display = 'none'; // Hide details if no customers
+            return;
+        }
+
+        // Sort entries by timestamp (most recent first)
+        filteredCustomerEntries.sort((a, b) => {
+            const dateA = new Date(a[HEADER_TIMESTAMP]);
+            const dateB = new Date(b[HEADER_TIMESTAMP]);
+            return dateB - dateA;
+        });
+
+        let slNo = 1;
+        filteredCustomerEntries.forEach(entry => {
+            const row = detailedCustomerReportTableBody.insertRow();
+            row.insertCell().textContent = slNo++;
+            row.insertCell().textContent = entry[HEADER_PROSPECT_NAME] || 'N/A';
+            row.insertCell().textContent = entry[HEADER_ACTIVITY_TYPE] || 'N/A';
+            row.insertCell().textContent = formatDate(entry[HEADER_TIMESTAMP]) || 'N/A';
+            row.insertCell().textContent = entry[HEADER_PROSPECT_STATUS] || 'N/A';
+
+            row.addEventListener('click', () => {
+                displaySelectedCustomerDetails(entry);
+                // Highlight active row
+                Array.from(detailedCustomerReportTableBody.children).forEach(r => r.classList.remove('active'));
+                row.classList.add('active');
+            });
+        });
+
+        // Automatically display details of the first customer if available
+        if (filteredCustomerEntries.length > 0) {
+            displaySelectedCustomerDetails(filteredCustomerEntries[0]);
+            detailedCustomerReportTableBody.children[0].classList.add('active'); // Highlight the first row
+        } else {
+            customerDetailsContent.style.display = 'none'; // Hide details if no customers
+        }
+    }
+
+
+    // Function to display details of a selected customer
+    function displaySelectedCustomerDetails(customer) {
+        if (!customer) {
+            customerDetailsContent.style.display = 'none';
+            return;
+        }
+
+        customerDetailsContent.style.display = 'block'; // Ensure the details section is visible
+
+        // Update the customer name in the main heading of the detailed view
+        document.getElementById('currentCustomerName').textContent = customer[HEADER_PROSPECT_NAME] || 'N/A';
+
+        // Populate the new Employee Name and Branch Name fields
+        document.getElementById('employeeNameValue').textContent = customer[HEADER_EMPLOYEE_NAME] || 'N/A';
+        document.getElementById('branchNameValue').textContent = customer[HEADER_BRANCH_NAME] || 'N/A';
+
+        const customerCard1 = document.getElementById('customerCard1');
+        const customerCard2 = document.getElementById('customerCard2');
+        const customerCard3 = document.getElementById('customerCard3');
+        const customerCard4 = document.getElementById('customerCard4');
+        const customerCard5 = document.getElementById('customerCard5');
+
+        // Populate Contact & Basic Info card
+        customerCard1.innerHTML = `
+            <h4>Contact & Basic Info</h4>
+            <div class="detail-row"><div class="detail-label">Prospect Name:</div><div class="detail-value">${customer[HEADER_PROSPECT_NAME] || 'N/A'}</div></div>
+            <div class="detail-row"><div class="detail-label">Phone:</div><div class="detail-value">${customer[HEADER_PHONE_NUMBER_WHATSAPP] || 'N/A'}</div></div>
+            <div class="detail-row"><div class="detail-label">Address:</div><div class="detail-value">${customer[HEADER_ADDRESS] || 'N/A'}</div></div>
+            <div class="detail-row"><div class="detail-label">Profession:</div><div class="detail-value">${customer[HEADER_PROFESSION] || 'N/A'}</div></div>
+            <div class="detail-row"><div class="detail-label">DOB/WD:</div><div class="detail-value">${formatDate(customer[HEADER_DOB_WD]) || 'N/A'}</div></div>
+            <div class="detail-row"><div class="detail-label">Relation with Staff:</div><div class="detail-value">${customer[HEADER_RELATION_WITH_STAFF] || 'N/A'}</div></div>
+        `;
+
+        // Populate Activity & Interests card
+        customerCard2.innerHTML = `
+            <h4>Activity & Interests</h4>
+            <div class="detail-row"><div class="detail-label">Activity Type:</div><div class="detail-value">${customer[HEADER_ACTIVITY_TYPE] || 'N/A'}</div></div>
+            <div class="detail-row"><div class="detail-label">Date:</div><div class="detail-value">${formatDate(customer[HEADER_TIMESTAMP]) || 'N/A'}</div></div>
+            <div class="detail-row"><div class="detail-label">Type of Customer:</div><div class="detail-value">${customer[HEADER_TYPE_OF_CUSTOMER] || 'N/A'}</div></div>
+            <div class="detail-row"><div class="detail-label">Lead Source:</div><div class="detail-value">${customer[HEADER_R_LEAD_SOURCE] || 'N/A'}</div></div>
+            <div class="detail-row"><div class="detail-label">How Contacted:</div><div class="detail-value">${customer[HEADER_HOW_CONTACTED] || 'N/A'}</div></div>
+            <div class="detail-row"><div class="detail-label">Product Interested:</div><div class="detail-value">${customer[HEADER_PRODUCT_INTERESTED] || 'N/A'}</div></div>
+            <div class="detail-row"><div class="detail-label">Prospect Status:</div><div class="detail-value">${customer[HEADER_PROSPECT_STATUS] || 'N/A'}</div></div>
+        `;
+
+        // Populate Family Details Card
+        customerCard3.innerHTML = `
+            <h4>Family Details</h4>
+            <div class="detail-row"><div class="detail-label">Spouse Name:</div><div class="detail-value">${customer[HEADER_FAMILY_DETAILS_1] || 'N/A'}</div></div>
+            <div class="detail-row"><div class="detail-label">Spouse Job:</div><div class="detail-value">${customer[HEADER_FAMILY_DETAILS_2] || 'N/A'}</div></div>
+            <div class="detail-row"><div class="detail-label">Children Names:</div><div class="detail-value">${customer[HEADER_FAMILY_DETAILS_3] || 'N/A'}</div></div>
+            <div class="detail-row"><div class="detail-label">Children Details:</div><div class="detail-value">${customer[HEADER_FAMILY_DETAILS_4] || 'N/A'}</div></div>
+        `;
+
+        // Populate Remarks Card (full-width)
+        customerCard4.innerHTML = `
+            <h4>Remarks</h4>
+            <div class="remark-text">${customer[HEADER_REMARKS] || 'N/A'}</div>
+        `;
+        customerCard4.classList.add('full-width-section'); // Apply full-width class
+
+        // Populate Profile of Customer Card (full-width)
+        customerCard5.innerHTML = `
+            <h4>Profile of Customer</h4>
+            <div class="profile-text">${customer[HEADER_PROFILE_OF_CUSTOMER] || 'N/A'}</div>
+        `;
+        customerCard5.classList.add('full-width-section'); // Apply full-width class
+
+        // Ensure these full-width sections are correctly added to the grid or container
+        // This assumes customerCard4 and customerCard5 are direct children of customerDetailsCard.
+        // If not, you might need to append them to the correct parent element.
+    }
+
+
+    // --- Employee Management Functions ---
+    // Function to load employees from localStorage (mock data store)
+    function loadEmployees() {
+        const employees = JSON.parse(localStorage.getItem('employees')) || [];
+        // Convert array back to map for easy lookup
+        employeeCodeToNameMap = {};
+        employeeCodeToDesignationMap = {};
+        allUniqueEmployees = []; // Clear previous list
+        employees.forEach(emp => {
+            employeeCodeToNameMap[emp.code] = emp.name;
+            employeeCodeToDesignationMap[emp.code] = emp.designation;
+            allUniqueEmployees.push(emp.code);
+        });
+        // Sort allUniqueEmployees for dropdowns
+        allUniqueEmployees.sort((codeA, codeB) => {
+            const nameA = employeeCodeToNameMap[codeA] || codeA;
+            const nameB = employeeCodeToNameMap[codeB] || codeB;
+            return nameA.localeCompare(nameB);
+        });
+        populateEmployeeTable();
+        // Update employee dropdowns in various sections
+        populateDropdown(employeeSelect, allUniqueEmployees, true);
+        populateDropdown(customerViewEmployeeSelect, allUniqueEmployees, true);
+
+        // Update branch dropdowns from PREDEFINED_BRANCHES
+        populateDropdown(branchSelect, PREDEFINED_BRANCHES, true);
+        populateDropdown(customerViewBranchSelect, PREDEFINED_BRANCHES, true);
+        populateDropdown(employeeBranchNameInput, PREDEFINED_BRANCHES, true); // For add employee form
+        populateDropdown(bulkEmployeeBranchNameInput, PREDEFINED_BRANCHES, true); // For bulk add form
+    }
+
+    // Function to save employees to localStorage
+    function saveEmployees() {
+        const employeesArray = Object.keys(employeeCodeToNameMap).map(code => ({
+            code: code,
+            name: employeeCodeToNameMap[code],
+            designation: employeeCodeToDesignationMap[code]
+        }));
+        localStorage.setItem('employees', JSON.stringify(employeesArray));
+    }
+
+    // Function to add a single employee
+    function addEmployee(code, name, branch, designation) {
+        if (!code || !name || !branch || !designation) {
+            displayEmployeeManagementMessage('All fields are required to add an employee.', true);
+            return;
+        }
+        if (employeeCodeToNameMap[code]) {
+            displayEmployeeManagementMessage(`Employee with code '${code}' already exists.`, true);
+            return;
+        }
+
+        employeeCodeToNameMap[code] = name;
+        employeeCodeToDesignationMap[code] = designation;
+        // Re-add to allUniqueEmployees and re-sort
+        allUniqueEmployees.push(code);
+        allUniqueEmployees.sort((codeA, codeB) => {
+            const nameA = employeeCodeToNameMap[codeA] || codeA;
+            const nameB = employeeCodeToNameMap[codeB] || codeB;
+            return nameA.localeCompare(nameB);
+        });
+        saveEmployees();
+        populateEmployeeTable();
+        populateDropdown(employeeSelect, allUniqueEmployees, true);
+        populateDropdown(customerViewEmployeeSelect, allUniqueEmployees, true);
+        displayEmployeeManagementMessage(`Employee "${name}" added successfully.`);
+        addEmployeeForm.reset(); // Clear form
+    }
+
+    // Function for bulk adding employees
+    function bulkAddEmployees(branchName, employeeDetailsText) {
+        const lines = employeeDetailsText.split('\n').filter(line => line.trim() !== '');
+        let successfulAdditions = 0;
+        let failedAdditions = 0;
+        const failedEmployees = [];
+
+        lines.forEach(line => {
+            const parts = line.split(',').map(s => s.trim());
+            if (parts.length === 2) {
+                const [code, name] = parts;
+                const designation = 'Default'; // Or infer from your logic if possible
+                if (!employeeCodeToNameMap[code]) {
+                    employeeCodeToNameMap[code] = name;
+                    employeeCodeToDesignationMap[code] = designation;
+                    allUniqueEmployees.push(code);
+                    successfulAdditions++;
+                } else {
+                    failedAdditions++;
+                    failedEmployees.push(`${name} (${code}) - Already exists`);
+                }
+            } else if (parts.length === 3) { // Assuming format: code,name,designation
+                const [code, name, designation] = parts;
+                 if (!employeeCodeToNameMap[code]) {
+                    employeeCodeToNameMap[code] = name;
+                    employeeCodeToDesignationMap[code] = designation;
+                    allUniqueEmployees.push(code);
+                    successfulAdditions++;
+                } else {
+                    failedAdditions++;
+                    failedEmployees.push(`${name} (${code}) - Already exists`);
+                }
+            }
+            else {
+                failedAdditions++;
+                failedEmployees.push(`Invalid format: "${line}"`);
+            }
+        });
+
+        allUniqueEmployees.sort((codeA, codeB) => {
+            const nameA = employeeCodeToNameMap[codeA] || codeA;
+            const nameB = employeeCodeToNameMap[codeB] || codeB;
+            return nameA.localeCompare(nameB);
+        });
+
+        saveEmployees();
+        populateEmployeeTable();
+        populateDropdown(employeeSelect, allUniqueEmployees, true);
+        populateDropdown(customerViewEmployeeSelect, allUniqueEmployees, true);
+
+        let msg = `Bulk add complete: ${successfulAdditions} successful, ${failedAdditions} failed.`;
+        if (failedEmployees.length > 0) {
+            msg += ` Failed: ${failedEmployees.join('; ')}`;
+        }
+        displayEmployeeManagementMessage(msg, failedAdditions > 0);
+        bulkAddEmployeeForm.reset();
+    }
+
+
+    // Function to delete an employee
+    function deleteEmployee(codeToDelete) {
+        if (confirm(`Are you sure you want to delete employee with code: ${codeToDelete}?`)) {
+            if (employeeCodeToNameMap[codeToDelete]) {
+                delete employeeCodeToNameMap[codeToDelete];
+                delete employeeCodeToDesignationMap[codeToDelete];
+                allUniqueEmployees = allUniqueEmployees.filter(code => code !== codeToDelete);
+                saveEmployees();
+                populateEmployeeTable();
+                populateDropdown(employeeSelect, allUniqueEmployees, true);
+                populateDropdown(customerViewEmployeeSelect, allUniqueEmployees, true);
+                displayEmployeeManagementMessage(`Employee with code '${codeToDelete}' deleted successfully.`);
+            } else {
+                displayEmployeeManagementMessage(`Employee with code '${codeToDelete}' not found.`, true);
+            }
+        }
+    }
+
+    // Function to populate the employee management table
+    function populateEmployeeTable() {
+        employeeListTableBody.innerHTML = ''; // Clear existing
+        let slNo = 1;
+        const employeesArray = Object.keys(employeeCodeToNameMap).map(code => ({
+            code: code,
+            name: employeeCodeToNameMap[code],
+            designation: employeeCodeToDesignationMap[code]
+        })).sort((a, b) => a.name.localeCompare(b.name)); // Sort by name for display
+
+        if (employeesArray.length === 0) {
+            employeeListTableBody.innerHTML = '<tr><td colspan="5">No employees added yet.</td></tr>';
+            return;
+        }
+
+        employeesArray.forEach(emp => {
+            const row = employeeListTableBody.insertRow();
+            row.insertCell().textContent = slNo++;
+            row.insertCell().textContent = emp.code;
+            row.insertCell().textContent = emp.name;
+            row.insertCell().textContent = emp.designation;
+            const actionsCell = row.insertCell();
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.className = 'btn danger-btn';
+            deleteBtn.addEventListener('click', () => deleteEmployee(emp.code));
+            actionsCell.appendChild(deleteBtn);
+        });
+    }
+
+
+    // --- Main Data Processing and Initialization ---
+
+    async function processData() {
+        displayMessage('Loading data...', 'info');
+        try {
+            allCanvassingData = await parseCsv(GOOGLE_SHEETS_CSV_URL);
+            displayMessage('Data loaded successfully!', 'success');
+
+            // Collect all unique employee codes and their names/designations from canvassing data
+            allCanvassingData.forEach(entry => {
+                const code = entry[HEADER_EMPLOYEE_CODE];
+                const name = entry[HEADER_EMPLOYEE_NAME];
+                const designation = entry[HEADER_DESIGNATION];
+                if (code && name && !employeeCodeToNameMap[code]) {
+                    employeeCodeToNameMap[code] = name;
+                    employeeCodeToDesignationMap[code] = designation;
+                }
+            });
+
+            // Load employees from local storage after processing CSV to ensure localStorage overrides/supplements
+            // or merges with CSV data as the master list.
+            loadEmployees(); // This will populate dropdowns and table
+
+            // Ensure PREDEFINED_BRANCHES are used for branch dropdowns
+            populateDropdown(branchSelect, PREDEFINED_BRANCHES, true);
+            populateDropdown(customerViewBranchSelect, PREDEFINED_BRANCHES, true);
+
+            // Populate months dropdowns
+            populateMonthDropdowns();
+
+            // Initial rendering of reports based on default selections
+            // Only render if full access, otherwise the user needs to enter password first
+            if (currentAccessLevel) {
+                 renderAllBranchSnapshot();
+                 // Optionally render non-participating branches initially if that's the default view
+                 // renderNonParticipatingBranches();
+            }
+
+
+        } catch (error) {
+            console.error('Error fetching or processing data:', error);
+            displayMessage('Failed to load data. Please check the URL and your internet connection.', 'error');
+        }
+    }
+
+
+    // --- Tab Switching Logic (Re-factored) ---
+    // Make sure 'reportsSection' and 'detailedCustomerViewSection' are properly defined in your HTML and script
+    function showTab(tabId) {
+        // Hide all sections first
+        reportsSection.style.display = 'none';
+        detailedCustomerViewSection.style.display = 'none';
+        employeeManagementSection.style.display = 'none';
+        nonParticipatingEmployeesSection.style.display = 'none'; // Ensure this section is also handled
+
+        // Deactivate all tab buttons
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.classList.remove('active');
+        });
+
+        // Show the selected section and activate its button
+        let activeSection;
+        let activeTabButton;
+
+        if (tabId === 'allBranchSnapshotTabBtn' || tabId === 'allStaffOverallPerformanceTabBtn' ||
+            tabId === 'branchPerformanceTabBtn' || tabId === 'performanceSummaryTabBtn') { // removed nonParticipatingBranchesTabBtn from here
+            activeSection = reportsSection;
+            activeTabButton = document.getElementById(tabId);
+            // Re-render relevant report when switching tabs if needed
+            if (tabId === 'allBranchSnapshotTabBtn') renderAllBranchSnapshot();
+            else if (tabId === 'allStaffOverallPerformanceTabBtn') renderOverallStaffPerformanceReport();
+            else if (tabId === 'branchPerformanceTabBtn') renderBranchPerformanceReport();
+            // No specific render for performanceSummaryTabBtn here as it's triggered by dropdowns
+        } else if (tabId === 'nonParticipatingBranchesTabBtn' || tabId === 'nonParticipantReportTabBtn') { // Handle both buttons for non-participants report
+             activeSection = nonParticipatingEmployeesSection; // This is the section ID for non-participants report
+             activeTabButton = document.getElementById(tabId);
+             renderNonParticipatingBranches(); // Render the non-participating employees report
+        }
+        else if (tabId === 'detailedCustomerViewTabBtn') {
+            activeSection = detailedCustomerViewSection;
+            activeTabButton = document.getElementById(tabId);
+            // Reset customer view filters and content when switching to this tab
+            customerViewBranchSelect.value = '';
+            customerViewEmployeeSelect.innerHTML = '<option value="">-- Select --</option>';
+            customerViewMonthSelect.value = '';
+            detailedCustomerReportTableBody.innerHTML = '<tr><td colspan="5">Select a branch, employee, and month to load customer data.</td></tr>';
+            customerDetailsContent.style.display = 'none';
+        } else if (tabId === 'employeeManagementTabBtn') {
+            activeSection = employeeManagementSection;
+            activeTabButton = document.getElementById(tabId);
+            populateEmployeeTable(); // Refresh table when entering this section
+        }
+
+        if (activeSection) {
+            activeSection.style.display = 'block'; // Or 'flex' or 'grid' based on section's primary layout
+        }
+        if (activeTabButton) {
+            activeTabButton.classList.add('active');
+        }
+    }
+
+
+    // --- Event Listeners for Tab Buttons ---
+    if (allBranchSnapshotTabBtn) {
+        allBranchSnapshotTabBtn.addEventListener('click', () => {
+            showTab('allBranchSnapshotTabBtn');
+        });
+    }
+    if (allStaffOverallPerformanceTabBtn) {
+        allStaffOverallPerformanceTabBtn.addEventListener('click', () => {
+            showTab('allStaffOverallPerformanceTabBtn');
+            renderOverallStaffPerformanceReport(); // Render with current month/year selected by default
+        });
+    }
+    if (nonParticipatingBranchesTabBtn) {
+        nonParticipatingBranchesTabBtn.addEventListener('click', () => {
+            showTab('nonParticipatingBranchesTabBtn');
+            renderNonParticipatingBranches(); // Render with current month/year selected by default
+        });
+    }
+    // New listener for the "Non-Participant Report" tab button (if distinct from Zero Visit Branches)
+    if (nonParticipantReportTabBtn) {
+        nonParticipantReportTabBtn.addEventListener('click', () => {
+            showTab('nonParticipantReportTabBtn');
+        });
+    }
+    if (branchPerformanceTabBtn) {
+        branchPerformanceTabBtn.addEventListener('click', () => {
+            showTab('branchPerformanceTabBtn');
+            renderBranchPerformanceReport(); // Render with current month/year selected by default
+        });
+    }
+    if (detailedCustomerViewTabBtn) {
+        detailedCustomerViewTabBtn.addEventListener('click', () => {
+            showTab('detailedCustomerViewTabBtn');
+        });
+    }
+    if (employeeManagementTabBtn) {
+        employeeManagementTabBtn.addEventListener('click', () => {
+            showTab('employeeManagementTabBtn');
+        });
+    }
+
+
+    // --- Event Listeners for Filter Controls ---
+    monthSelect.addEventListener('change', () => {
+        // Re-render the currently active report when month changes
+        const activeTab = document.querySelector('.tab-button.active');
+        if (activeTab) {
+            if (activeTab.id === 'allBranchSnapshotTabBtn') {
+                renderAllBranchSnapshot();
+            } else if (activeTab.id === 'allStaffOverallPerformanceTabBtn') {
+                renderOverallStaffPerformanceReport();
+            } else if (activeTab.id === 'branchPerformanceTabBtn') {
+                renderBranchPerformanceReport();
+            } else if (activeTab.id === 'nonParticipatingBranchesTabBtn' || activeTab.id === 'nonParticipantReportTabBtn') {
+                renderNonParticipatingBranches();
+            } else if (activeTab.id === 'performanceSummaryTabBtn') {
+                // If performance summary is active, re-render the specific employee summary if one is selected
+                const selectedEmployee = employeeSelect.value;
+                const selectedBranch = branchSelect.value;
+                 if (selectedBranch && selectedEmployee) {
+                    const selectedMonthValue = monthSelect.value;
+                    const filteredByMonth = filterDataByMonth(allCanvassingData, selectedMonthValue);
+                    const employeeActivities = filteredByMonth.filter(entry => entry[HEADER_EMPLOYEE_CODE] === selectedEmployee && entry[HEADER_BRANCH_NAME] === selectedBranch );
+                    renderEmployeeSummary(employeeActivities);
+                } else {
+                    reportDisplay.innerHTML = '<p>Please select a branch, an employee, and a month to view the Performance Summary.</p>';
+                }
+            } else if (activeTab.id === 'staffParticipationTabBtn') {
+                 renderStaffParticipationReport();
+            } else if (activeTab.id === 'visitLeaderboardTabBtn') {
+                 renderLeaderboard('Visit');
+            } else if (activeTab.id === 'callLeaderboardTabBtn') {
+                 renderLeaderboard('Call');
+            }
+        }
+    });
+
+    branchSelect.addEventListener('change', () => {
+        const selectedBranch = branchSelect.value;
+        const selectedMonthValue = monthSelect.value; // Get selected month value
+
+        // Filter allCanvassingData by selected month first
+        let filteredByMonthData = filterDataByMonth(allCanvassingData, selectedMonthValue);
+
+        if (selectedBranch) {
+            employeeFilterPanel.style.display = 'block';
+            // Get employee codes ONLY from filtered data for the selected branch AND month
+            const employeeCodesInBranchFromCanvassing = filteredByMonthData
+                .filter(entry => entry[HEADER_BRANCH_NAME] === selectedBranch)
+                .map(entry => entry[HEADER_EMPLOYEE_CODE]);
+
+            // Combine with employees from the master list (employeeCodeToNameMap) that belong to this branch
+            const allEmployeesInSelectedBranch = new Set();
+            employeeCodesInBranchFromCanvassing.forEach(code => allEmployeesInSelectedBranch.add(code));
+
+            // Add employees from the global map if their designation implies a branch
+            // (This part might need more robust branch-employee mapping if not directly in canvassing data)
+            for (const code in employeeCodeToNameMap) {
+                // Assuming employee branch is explicitly stored somewhere or can be inferred
+                // For now, if an employee has activity in this branch in the filtered data, they are added.
+                // If you have a separate employee master data, you'd check employee.branch === selectedBranch
+            }
+
+            const sortedEmployeeCodesInBranch = [...allEmployeesInSelectedBranch].sort((codeA, codeB) => {
+                const nameA = employeeCodeToNameMap[codeA] || codeA;
+                const nameB = employeeCodeToNameMap[codeB] || codeB;
+                return nameA.localeCompare(nameB);
+            });
+
+            populateDropdown(employeeSelect, sortedEmployeeCodesInBranch, true);
+            employeeSelect.value = ""; // Reset employee selection when branch changes
+        } else {
+            employeeFilterPanel.style.display = 'none';
+            employeeSelect.innerHTML = '<option value="">-- Select --</option>'; // Clear employee dropdown
+            employeeSelect.value = "";
+        }
+        // Re-render active report
+        const activeTab = document.querySelector('.tab-button.active');
+        if (activeTab && activeTab.id === 'performanceSummaryTabBtn') {
+            reportDisplay.innerHTML = '<p>Please select an employee to view the Performance Summary.</p>';
+        }
+    });
+
+    employeeSelect.addEventListener('change', () => {
+        const activeTab = document.querySelector('.tab-button.active');
+        if (activeTab && activeTab.id === 'performanceSummaryTabBtn') {
+            const selectedBranch = branchSelect.value;
+            const selectedEmployee = employeeSelect.value;
+            if (selectedBranch && selectedEmployee) {
+                const selectedMonthValue = monthSelect.value;
+                const filteredByMonth = filterDataByMonth(allCanvassingData, selectedMonthValue);
+                const employeeActivities = filteredByMonth.filter(entry => entry[HEADER_EMPLOYEE_CODE] === selectedEmployee && entry[HEADER_BRANCH_NAME] === selectedBranch );
+                renderEmployeeSummary(employeeActivities);
+            } else {
+                reportDisplay.innerHTML = '<p>Please select a branch, an employee, and a month to view the Performance Summary.</p>';
+            }
+        } else {
+            renderOverallStaffPerformanceReport();
+        }
+    });
+
+
+    // Customer View Filters
+    customerViewBranchSelect.addEventListener('change', () => {
+        const selectedBranch = customerViewBranchSelect.value;
+        const selectedMonthValue = customerViewMonthSelect.value; // Use customer view month select
+
+        // Filter allCanvassingData by selected month first
+        const filteredByMonthData = filterDataByMonth(allCanvassingData, selectedMonthValue);
+
+        if (selectedBranch) {
+            // Then, get only employees from that month's data for the selected branch
+            const employeeCodesInBranchFromCanvassing = filteredByMonthData
+                .filter(entry => entry[HEADER_BRANCH_NAME] === selectedBranch)
+                .map(entry => entry[HEADER_EMPLOYEE_CODE]);
+
+            // Get unique employee codes and sort them
+            const combinedEmployeeCodes = new Set([
+                ...employeeCodesInBranchFromCanvassing
+            ]);
+            const sortedEmployeeCodesInBranch = [...combinedEmployeeCodes].sort((codeA, codeB) => {
+                const nameA = employeeCodeToNameMap[codeA] || codeA;
+                const nameB = employeeCodeToNameMap[codeB] || codeB;
+                return nameA.localeCompare(nameB);
+            });
+
+            // Populate the specific employee dropdown for "Detailed Customer View"
+            populateDropdown(customerViewEmployeeSelect, sortedEmployeeCodesInBranch, true);
+            // Reset the employee selection after branch or month changes
+            customerViewEmployeeSelect.value = "";
+        } else {
+            // If no branch is selected, clear the employee dropdown
+            customerViewEmployeeSelect.innerHTML = '<option value="">-- Select --</option>';
+            customerViewEmployeeSelect.value = "";
+        }
+        // Clear customer details when branch changes
+        detailedCustomerReportTableBody.innerHTML = '<tr><td colspan="5">Select a branch and employee to load customer data.</td></tr>';
+        customerDetailsContent.style.display = 'none';
+    });
+
+    customerViewEmployeeSelect.addEventListener('change', () => {
+        // If both branch and employee are selected, load the report
+        const selectedBranch = customerViewBranchSelect.value;
+        const selectedEmployee = customerViewEmployeeSelect.value;
+        const selectedMonth = customerViewMonthSelect.value;
+        if (selectedBranch && selectedEmployee && selectedMonth) {
+            loadDetailedCustomerReport();
+        } else {
+            // Show a message if no employee is selected yet
+            detailedCustomerReportTableBody.innerHTML = '<tr><td colspan="5">Select an employee to load customer data.</td></tr>';
+            customerDetailsContent.style.display = 'none';
+        }
+    });
+
+    customerViewMonthSelect.addEventListener('change', () => {
+        const selectedBranch = customerViewBranchSelect.value;
+        const selectedMonthValue = customerViewMonthSelect.value;
+
+        // Repopulate employee dropdown based on new month and existing branch
+        if (selectedBranch) {
+            const filteredByMonthData = filterDataByMonth(allCanvassingData, selectedMonthValue);
+            const employeeCodesInBranchFromCanvassing = filteredByMonthData
+                .filter(entry => entry[HEADER_BRANCH_NAME] === selectedBranch)
+                .map(entry => entry[HEADER_EMPLOYEE_CODE]);
+
+            const combinedEmployeeCodes = new Set([...employeeCodesInBranchFromCanvassing]);
+            const sortedEmployeeCodesInBranch = [...combinedEmployeeCodes].sort((codeA, codeB) => {
+                const nameA = employeeCodeToNameMap[codeA] || codeA;
+                const nameB = employeeCodeToNameMap[codeB] || codeB;
+                return nameA.localeCompare(nameB);
+            });
+            populateDropdown(customerViewEmployeeSelect, sortedEmployeeCodesInBranch, true);
+            customerViewEmployeeSelect.value = "";
+        } else {
+            customerViewEmployeeSelect.innerHTML = '<option value="">-- Select --</option>';
+            customerViewEmployeeSelect.value = "";
+        }
+        // Clear customer details when month changes
+        detailedCustomerReportTableBody.innerHTML = '<tr><td colspan="5">Select a branch, employee, and month to load customer data.</td></tr>';
+        customerDetailsContent.style.display = 'none';
+    });
+
+
+    // Load customer data button
+    document.getElementById('loadCustomerDataBtn').addEventListener('click', loadDetailedCustomerReport);
+
+
+    // --- Event Listeners for Employee Management Forms ---
+    if (addEmployeeForm) {
+        addEmployeeForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const code = employeeCodeInput.value.trim();
+            const name = employeeNameInput.value.trim();
+            const branch = employeeBranchNameInput.value.trim();
+            const designation = employeeDesignationInput.value.trim();
+            addEmployee(code, name, branch, designation);
+        });
+    }
+
+    if (bulkAddEmployeeForm) {
+        bulkAddEmployeeForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const bulkBranchName = bulkEmployeeBranchNameInput.value;
+            const bulkDetails = bulkEmployeeDetailsTextarea.value.trim();
+            if (!bulkBranchName || !bulkDetails) {
+                displayEmployeeManagementMessage('Branch and employee details are required for bulk addition.', true);
+                return;
+            }
+            bulkAddEmployees(bulkBranchName, bulkDetails);
+        });
+    }
+
+    // Event listener for the "Download Non-Participants CSV" button
+    const downloadNonParticipantsReportBtn = document.getElementById('downloadNonParticipantsReportBtn');
+    if (downloadNonParticipantsReportBtn) {
+        downloadNonParticipantsReportBtn.addEventListener('click', downloadNonParticipantsReportCSV);
+    }
+
+    // Event listener for the "Download Overall Staff Performance Report" button
+    const downloadOverallStaffPerformanceReportButton = document.getElementById('downloadOverallStaffPerformanceReportBtn');
+    if (downloadOverallStaffPerformanceReportButton) {
+        downloadOverallStaffPerformanceReportButton.addEventListener('click', downloadOverallStaffPerformanceReportCSV);
+    }
+
+    // Initial data fetch and tab display when the page loads
+    // The actual call to processData() and showTab() is now inside checkAndSetAccess()
+    // processData(); // This is called after password check
+    // showTab('allBranchSnapshotTabBtn'); // This is called after password check
+}); // This is the closing brace for DOMContentLoadeddocument.addEventListener('DOMContentLoaded', () => {
+
+    // --- START: TWO-TIERED FRONT-END PASSWORD PROTECTION ---
+    const ACCESS_PASSWORD_FULL = "sml4576"; // Full access password
+    const ACCESS_PASSWORD_LIMITED = "123";  // Limited access password
+    let currentAccessLevel = null; // To store 'full' or 'limited'
+    const accessDeniedOverlay = document.getElementById('accessDeniedOverlay');
+    const dashboardContent = document.getElementById('dashboardContent');
+    const secretPasswordInputContainer = document.getElementById('secretPasswordInputContainer');
+    const secretPasswordInput = document.getElementById('secretPasswordInput');
+    const submitSecretPasswordBtn = document.getElementById('submitSecretPassword');
+    const passwordErrorMessage = document.getElementById('passwordErrorMessage');
+   // Get references to buttons/tabs that need conditional access
+    const downloadOverallStaffPerformanceReportBtn = document.getElementById('downloadOverallStaffPerformanceReportBtn');
+    const detailedCustomerViewTabBtn = document.getElementById('detailedCustomerViewTabBtn');
+    const viewAllEntriesButton = document.getElementById('viewAllEntriesBtn'); // <--- ADD THIS LINE (OR UPDATE THE EXISTING PLACEHOLDER)
+       if (secretPasswordInput) {
+        secretPasswordInput.focus();
+    }
+    submitSecretPasswordBtn.addEventListener('click', () => {
+        checkAndSetAccess();
+    });
+    secretPasswordInput.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            checkAndSetAccess();
+        }
+    });
+
+    function checkAndSetAccess() {
+        const enteredPassword = secretPasswordInput.value;
 
         if (enteredPassword === ACCESS_PASSWORD_FULL) {
             currentAccessLevel = 'full';
