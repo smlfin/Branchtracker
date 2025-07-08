@@ -78,13 +78,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // If your CSV column order or content changes, these indices will need adjustment.
 
             // Based on logs: cleanedValues[6] contains the Employee Code
-            row['Employee Code'] = cleanedValues[6] || '';
-            // Based on logs: cleanedValues[1] contains the Employee Name
-            row['Employee Name'] = cleanedValues[1] || '';
-            // Based on logs: cleanedValues[3] contains the first instance of Division/Location
-            row['Division'] = cleanedValues[3] || '';
-            // Based on logs: cleanedValues[2] consistently shows empty for Designation
-            row['Designation'] = cleanedValues[2] || '';
+            row['Employee Code'] = cleanedValues[0] || '';
+row['Employee Name'] = cleanedValues[1] || '';
+row['Division']      = cleanedValues[2] || '';
+row['Designation']   = cleanedValues[3] || '';
+
 
             // If you have more columns or the 'Designation' is actually at another index, adjust here.
             // Example for other potential columns, if they existed and were needed:
